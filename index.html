@@ -1,1 +1,679 @@
-kk
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Better for iPhone and modern devices -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#C0392B" />
+
+  <title>My Observations App 👷🏻‍♂️</title>
+
+  <!-- Icons & fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    rel="apple-touch-icon"
+    href="https://drive.google.com/uc?export=view&id=1pT2_mI_B9CrnOde6YK__OzBd2gYEppXy"
+  />
+  <link
+    rel="icon"
+    type="image/png"
+    href="https://drive.google.com/uc?export=view&id=1pT2_mI_B9CrnOde6YK__OzBd2gYEppXy"
+  />
+
+  <!-- Your external stylesheet -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="light-mode">
+
+<div id="leaderboardModal" class="modal">
+    <div class="modal-content">
+        <h2>📊 Monthly Leaderboard</h2>
+        <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 10px;">
+            This leaderboard shows the top 10 employees (per month) based on points earned from safety observations and behavior.
+            Data is fetched from the "Employee of the Month" Google Sheets.
+        </p>
+        <div id="leaderboardStatus" style="font-size: 0.85rem; margin-bottom: 5px; color: var(--text-muted);"></div>
+        <div id="leaderboardLoading" class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i> Loading leaderboard...
+        </div>
+        <table id="leaderboardTable" class="safety-table" style="display:none; margin-top: 10px;">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Employee</th>
+                    <th>Points</th>
+                    <th>Zone</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboardTableBody">
+                <!-- Populated dynamically -->
+            </tbody>
+        </table>
+        <p id="leaderboardError" style="color: var(--danger-color); font-size: 0.85rem; display:none; margin-top: 10px;"></p>
+        <button class="close-button" onclick="closeModal('leaderboardModal')">Close</button>
+    </div>
+</div>
+
+<!-- Heat Illness Modal -->
+<div id="heatIllnessModal" class="modal">
+    <div class="modal-content">
+        <button class="close-button" onclick="closeModal('heatIllnessModal')">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2>🌡️ Heat Illness Types & Symptoms</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+            Understanding types of heat illness helps identify and act quickly in emergencies.
+        </p>
+        <table class="safety-table">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Key Symptoms</th>
+                    <th>Immediate Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Heat Rash</strong></td>
+                    <td>Red clusters of pimples or small blisters; usually on neck, chest, groin, or elbow creases.</td>
+                    <td>Move to a cool, dry place. Keep the area dry and avoid sweating. Use powder for comfort.</td>
+                </tr>
+                <tr>
+                    <td><strong>Heat Cramps</strong></td>
+                    <td>Muscle pains or spasms in legs, arms, or abdomen during heavy work.</td>
+                    <td>Stop activity, move to cool area, drink water or electrolyte beverages, stretch affected muscles gently.</td>
+                </tr>
+                <tr>
+                    <td><strong>Heat Exhaustion</strong></td>
+                    <td>Heavy sweating, weakness, cold/pale/clammy skin, fast/weak pulse, nausea, dizziness, headache, fainting.</td>
+                    <td>Move to shade or AC, loosen clothing, apply cool wet cloths, sip water. Seek medical help if symptoms worsen or last more than 1 hour.</td>
+                </tr>
+                <tr>
+                    <td><strong>Heat Stroke</strong></td>
+                    <td>Body temp ≥ 40°C, hot/dry or damp skin, confusion, loss of consciousness, seizures, strong rapid pulse.</td>
+                    <td><strong>CALL EMERGENCY IMMEDIATELY 🚑</strong> Move to shade, cool rapidly with water/ice packs, do not give fluids if unconscious.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p style="font-size: 0.85rem; margin-top: 10px;">
+            <strong>Always follow company emergency procedures and report immediately.</strong>
+        </p>
+    </div>
+</div>
+
+<!-- Incident Classification Modal -->
+<div id="incidentClassificationModal" class="modal">
+    <div class="modal-content">
+        <button class="close-button" onclick="closeModal('incidentClassificationModal')">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2>⚠️ Incident Classification Guide</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+            This guide helps you understand how incidents and near misses are classified.
+        </p>
+        <table class="safety-table">
+            <thead>
+                <tr>
+                    <th>Classification</th>
+                    <th>Description</th>
+                    <th>Examples</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Near Miss</strong></td>
+                    <td>Unplanned event that did not result in injury or damage but had potential to do so.</td>
+                    <td>Falling object landing near a worker; worker trips but does not fall.</td>
+                </tr>
+                <tr>
+                    <td><strong>First Aid Case</strong></td>
+                    <td>Minor injury requiring only simple first aid treatment.</td>
+                    <td>Small cut treated with bandage; minor burn treated on-site.</td>
+                </tr>
+                <tr>
+                    <td><strong>Medical Treatment Case</strong></td>
+                    <td>Injury requiring treatment by a medical professional beyond first aid.</td>
+                    <td>Stitches, prescription medication, or minor surgery.</td>
+                </tr>
+                <tr>
+                    <td><strong>Restricted Work Case</strong></td>
+                    <td>Worker cannot perform normal duties but can do limited work.</td>
+                    <td>Back injury preventing lifting; assigned light duty.</td>
+                </tr>
+                <tr>
+                    <td><strong>Lost Time Injury</strong></td>
+                    <td>Injury resulting in missed work days beyond the day of the incident.</td>
+                    <td>Fracture requiring rest days off work.</td>
+                </tr>
+                <tr>
+                    <td><strong>Fatality</strong></td>
+                    <td>Death resulting from a work-related incident.</td>
+                    <td>Serious accident leading to loss of life.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p style="font-size: 0.85rem; margin-top: 10px;">
+            <strong>Always report all incidents and near misses immediately according to site procedure.</strong>
+        </p>
+    </div>
+</div>
+
+<!-- Emergency Modal: Emergency Team, GPS, QRT, etc. -->
+<div id="emergencyModal" class="modal">
+    <div class="modal-content">
+        <h2 style="text-align:center; color:var(--danger-color); margin-top:0; font-family: 'Poppins', sans-serif;">🆘 EMERGENCY CONTACTS</h2>
+        <p style="text-align:center; font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">
+            In any emergency, follow the <strong>SITE EMERGENCY PROCEDURE</strong> and contact the appropriate personnel below.
+        </p>
+        
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordionContent(this)">
+                <span>📞 Emergency Phone Numbers</span>
+                <span>+</span>
+            </div>
+            <div class="accordion-body">
+                <table class="safety-table">
+                    <thead>
+                        <tr>
+                            <th>Contact</th>
+                            <th>Number</th>
+                            <th>Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Ambulance / Medical</td>
+                            <td><a href="tel:997">997</a></td>
+                            <td>Government Emergency Medical Services</td>
+                        </tr>
+                        <tr>
+                            <td>Fire Department</td>
+                            <td><a href="tel:998">998</a></td>
+                            <td>Fire & Rescue</td>
+                        </tr>
+                        <tr>
+                            <td>Police</td>
+                            <td><a href="tel:999">999</a></td>
+                            <td>Law Enforcement</td>
+                        </tr>
+                        <tr>
+                            <td>Site Emergency Number</td>
+                            <td><a href="tel:+966XXXXXXXXX">+966 XX XXX XXXX</a></td>
+                            <td>Site Control Room / Emergency</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordionContent(this)">
+                <span>👷‍♂️ Emergency Response Team (ERT)</span>
+                <span>+</span>
+            </div>
+            <div class="accordion-body">
+                <table class="safety-table">
+                    <thead>
+                        <tr>
+                            <th>Name / Position</th>
+                            <th>Contact</th>
+                            <th>Responsibility</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Site Emergency Coordinator</td>
+                            <td><a href="tel:+966XXXXXXXXX">+966 XX XXX XXXX</a></td>
+                            <td>Overall emergency command & communication with authorities.</td>
+                        </tr>
+                        <tr>
+                            <td>HSE Manager</td>
+                            <td><a href="tel:+966XXXXXXXXX">+966 XX XXX XXXX</a></td>
+                            <td>HSE support, investigation, and reporting.</td>
+                        </tr>
+                        <tr>
+                            <td>First Aiders</td>
+                            <td><a href="tel:+966XXXXXXXXX">+966 XX XXX XXXX</a></td>
+                            <td>Provide first aid & support until medical help arrives.</td>
+                        </tr>
+                        <tr>
+                            <td>Fire Wardens</td>
+                            <td><a href="tel:+966XXXXXXXXX">+966 XX XXX XXXX</a></td>
+                            <td>Assist with evacuation, fire response, and muster point checks.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordionContent(this)">
+                <span>📍 Share GPS Location (WhatsApp)</span>
+                <span>+</span>
+            </div>
+            <div class="accordion-body">
+                <p style="font-size:0.85rem;">
+                    In a remote site, sharing your <strong>exact GPS location</strong> can save critical time.
+                </p>
+                <ol style="font-size:0.85rem; padding-left:18px; margin-top:5px;">
+                    <li>Open <strong>WhatsApp</strong> on your phone.</li>
+                    <li>Select the emergency contact or group.</li>
+                    <li>Tap the <strong>📎 (attach)</strong> icon &gt; <strong>Location</strong>.</li>
+                    <li>Select <strong>"Share live location"</strong> or <strong>"Send your current location"</strong>.</li>
+                    <li>Add brief details: <em>"Heat illness / fall / equipment fire at excavation near north gate."</em></li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordionContent(this)">
+                <span>🚑 Quick Response Team (QRT)</span>
+                <span>+</span>
+            </div>
+            <div class="accordion-body">
+                <p style="font-size:0.85rem;">
+                    The <strong>Quick Response Team</strong> is responsible for immediate on-site intervention in case of:
+                </p>
+                <ul style="font-size:0.85rem; padding-left:18px;">
+                    <li>Serious injury or medical emergencies</li>
+                    <li>Fire or explosion</li>
+                    <li>Structural collapse or major equipment failure</li>
+                    <li>Chemical or gas leaks</li>
+                </ul>
+                <p style="font-size:0.85rem;">
+                    Always <strong>raise the alarm</strong>, ensure your own safety first, and then call QRT.
+                </p>
+            </div>
+        </div>
+
+        <button class="close-button" onclick="closeModal('emergencyModal')" style="margin-top:15px;">Close</button>
+    </div>
+</div>
+
+
+<div class="app-container">
+    <div class="header">
+        <span>My Observations App 👷🏻‍♂️</span>
+        <div class="mode-toggle" onclick="toggleDarkMode()">
+             <i id="modeIcon" class="fas fa-moon"></i> 
+        </div>
+    </div>
+
+    <div class="content-area">
+<div id="NewsTab" class="tab-content">
+            <div id="AnnouncementsContainer">
+                <div id="newsLoading" class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i> Fetching news...
+                </div>
+                </div>
+        </div>
+        
+        <div id="FormTab" class="tab-content" style="display: none;">
+             <div class="floating-form-container">
+                <div class="floating-buttons">
+                   <div class="floating-button" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSdnuJFGZUvbiKGtTrrXU3yhgzNhROMHTxSekVEN1vzFuegOIw/viewform?usp=header', '_blank')">
+                        <i class="fas fa-user-check"></i>  
+                        <span> Supervisor Observation</span>
+                    </div> 
+                    <div class="floating-button" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSfYED_4UfHcmWn0fQOjtR5s8A0-Bhr4dwpe-80GjKkLeTR_Lw/viewform?usp=header', '_blank')">
+                        <i class="fas fa-helmet-safety"></i> 
+                        <span> Employee Observation</span>
+                    </div>
+                    <div class="floating-button" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSezDwZ13reQ2wX70Iv2nQHkwuaMiVCBuTsZ1xACdPLmKK3WHA/viewform?usp=header', '_blank')">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        <span> Near Miss</span>
+                    </div>
+                </div>
+               
+                <div class="iframe-placeholder">
+                    <i class="fas fa-clipboard-list"></i>
+                    <p>Click on any form button to open the respective Google Form in a new tab or window.</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="TasksTab" class="tab-content" style="display: none;">
+            <div class="tasks-grid">
+                <div class="task-box risk-box">
+                    <h3>📋 Top Site Risks Today</h3>
+                    <ul class="checklist">
+                        <li>✅ Proper work permits obtained and valid for today's activities.</li>
+                        <li>🦺 Ensure all workers are wearing correct PPE (helmets, vests, gloves, safety boots, etc.).</li>
+                        <li>⚡ Verify electrical tools, cables, and temporary connections are safe and inspected.</li>
+                        <li>🏗️ Check all scaffolds, ladders, and working platforms for stability and safe access.</li>
+                        <li>🚧 Confirm proper barricading and signage around open edges, excavations, and restricted zones.</li>
+                        <li>🚚 Ensure traffic management is in place: spotters assigned, speed limits enforced, and vehicle routes defined.</li>
+                        <li>🔥 Inspect hot work areas and fire extinguishers before and after hot work tasks.</li>
+                    </ul>
+                </div>
+
+                <div class="task-box observation-box">
+                    <h3>👀 Observations to Check</h3>
+                    <ul class="checklist">
+                        <li>👷‍♂️ Are workers following safe lifting techniques (manual handling)?</li>
+                        <li>🏗️ Are crane and lifting operations controlled, with valid lifting plans and clear communication?</li>
+                        <li>🧹 Is good housekeeping maintained (no tripping hazards, waste removed, materials stored properly)?</li>
+                        <li>🛠️ Are tools in good condition and used correctly for the job?</li>
+                        <li>🚨 Are emergency exits, routes, and muster points clear and accessible?</li>
+                        <li>🌡️ Are controls for heat stress and hydration in place (shade, water, breaks)?</li>
+                        <li>📢 Are supervisors and foremen leading by example and correcting unsafe behaviours?</li>
+                    </ul>
+                </div>
+
+                <div class="task-box priority-box">
+                    <h3>⭐ Priority Safety Focus Today</h3>
+                    <ul class="checklist">
+                        <li>🔍 Conduct at least <strong>one safety observation</strong> per supervisor/engineer during each shift.</li>
+                        <li>🧑‍🏫 Perform a <strong>Toolbox Talk</strong> before high-risk activities (PTW, hot work, work at height, lifting, etc.).</li>
+                        <li>📸 Take <strong>photos</strong> of both positive and negative observations to support learning.</li>
+                        <li>🤝 Engage workers: ask for feedback on site safety and any near misses they experienced.</li>
+                        <li>📄 Ensure all <strong>JSAs / Risk Assessments</strong> are updated and reflect current activities.</li>
+                        <li>📊 Track and discuss safety KPIs (observations, near misses, incidents) in daily coordination meetings.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- JSA Toolbox Section -->
+        <div id="JSATab" class="tab-content" style="display: none;">
+            <div class="jsa-container">
+                <h2>📘 Search JSA, JHA & Toolbox Talks</h2>
+                <p>Use the search box to quickly find Job Safety Analysis (JSA), Job Hazard Analysis (JHA), or Toolbox Talks
+                    based on trade, equipment, or topic.</p>
+
+                <div class="search-container">
+                    <input type="text" id="jsaSearchInput" placeholder="Search by trade, equipment, or topic... (e.g., scaffolding, crane, excavation)"
+                        oninput="filterJSAList()">
+                </div>
+
+                <div id="jsaListContainer" class="jsa-list">
+                    <p>Start typing to search for available JSA / JHA / TBT documents.</p>
+                </div>
+
+                <details class="accordion" style="margin-top:15px;">
+                    <summary class="accordion-header">
+                        <span>📌 In Case of Missing JSA / TBT</span>
+                    </summary>
+                    <div class="accordion-body">
+                        <ul class="checklist">
+                            <li>✅ Before starting a high-risk task, always check if a JSA or TBT is available.</li>
+                            <li>📝 If not available, <strong>stop and inform your Supervisor / HSE</strong> to prepare one.</li>
+                            <li>🤝 Engage workers in preparing the JSA to capture all possible hazards and controls.</li>
+                            <li>📂 Once approved, ensure a copy is kept at the worksite and uploaded to the system.</li>
+                        </ul>
+                    </div>
+                </details>
+
+            </div>
+        </div>
+
+        <!-- Docs & Records Section -->
+        <div id="DocsTab" class="tab-content" style="display: none;">
+            <div class="docs-container">
+                <h2>📁 Documents & Records</h2>
+                <p>Select any link below to open the shared Google Drive folder.</p>
+
+                <div class="doc-links">
+                    <div class="doc-link" onclick="window.open('https://drive.google.com/drive/folders/1lU0oJJpynzbUB_YIgNp23MWmKQU6d8Qa?usp=sharing', '_blank')">
+                        <i class="fas fa-folder-open"></i>
+                        <span>Safety Observations - Records</span>
+                    </div>
+                    <div class="doc-link" onclick="window.open('https://drive.google.com/drive/folders/1mVwF6bbH-PQVccgwPBFvgPEZ6UumC4LA?usp=sharing', '_blank')">
+                        <i class="fas fa-folder-tree"></i>
+                        <span>Near Miss & Incident Reports</span>
+                    </div>
+                    <div class="doc-link" onclick="window.open('https://drive.google.com/drive/folders/1iS8CJ_aBFpIicID8lUTTM2oYWlVdnC6z?usp=sharing', '_blank')">
+                        <i class="fas fa-clipboard-check"></i>
+                        <span>JSA, JHA & Risk Assessments</span>
+                    </div>
+                    <div class="doc-link" onclick="window.open('https://drive.google.com/drive/folders/1wFNTbZELYNMgkx9SJ8KLeec1q1ieGk6M?usp=sharing', '_blank')">
+                        <i class="fas fa-book-open-reader"></i>
+                        <span>Toolbox Talks Library</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tools Tab -->
+        <div id="ToolsTab" class="tab-content" style="display: none;">
+            <div class="tools-container">
+                <h2>🛠️ Quick Safety Tools</h2>
+                <p>Use these tools to assess daily conditions and plan safe work.</p>
+
+                <!-- Sub-tabs for calculators -->
+                <div class="sub-tab-buttons">
+                    <button class="sub-tab-button active" onclick="openSubTab(event, 'HeatTab')">🌡️ Heat Stress</button>
+                    <button class="sub-tab-button" onclick="openSubTab(event, 'WindTab')">💨 Wind Limits</button>
+                    <button class="sub-tab-button" onclick="openSubTab(event, 'ColorCodeTab')">🎨 Color Code</button>
+                </div>
+
+                <!-- Heat Stress Tool -->
+                <div id="HeatTab" class="sub-tab-content">
+                    <h3>🌡️ Heat Stress Assessment</h3>
+                    <p>Use this tool with your company heat policy and local regulations. Always cross-check with site HSE.</p>
+                    <div class="calculator">
+                        <label for="heatIndexInput">Heat Index / WBGT (°C)</label>
+                        <input type="number" id="heatIndexInput" placeholder="Enter heat index or WBGT value">
+                        <button onclick="assessHeatStress()">Assess Heat Level</button>
+                        <div id="heatResult" class="result-box"></div>
+                    </div>
+
+                    <button class="link-button" onclick="openModal('heatIllnessModal')">
+                        Learn about types of heat illness
+                    </button>
+                </div>
+
+                <!-- Wind Speed Tool -->
+                <div id="WindTab" class="sub-tab-content" style="display:none;">
+                    <h3>💨 Wind Speed & Work at Height</h3>
+                    <p>Compare current wind speed against your company limits for cranes, work at height, and lifting.</p>
+                    <div class="calculator">
+                        <label for="windSpeedInput">Current Wind Speed (km/h)</label>
+                        <input type="number" id="windSpeedInput" placeholder="Enter current wind speed">
+                        <button onclick="assessWindSpeed()">Check Work Allowance</button>
+                        <div id="windResult" class="result-box"></div>
+                    </div>
+                </div>
+
+                <!-- Color Code Tool -->
+                <div id="ColorCodeTab" class="sub-tab-content" style="display:none;">
+                    <h3>🎨 Daily Safety Color Code</h3>
+                    <p>Select the color code based on daily risk assessment and company procedure.</p>
+                    <div class="calculator">
+                        <label for="colorCodeSelect">Today's Color Code</label>
+                        <select id="colorCodeSelect" onchange="updateColorCodeInfo()">
+                            <option value="">Select...</option>
+                            <option value="green">🟢 Green - Normal conditions</option>
+                            <option value="yellow">🟡 Yellow - Caution / Elevated risk</option>
+                            <option value="orange">🟠 Orange - High risk / restrictions</option>
+                            <option value="red">🔴 Red - Very high risk / possible work stoppage</option>
+                        </select>
+                        <div id="colorCodeResult" class="result-box"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Tab (Always Highest Priority) -->
+        <div id="InfoTab" class="tab-content" style="display: none;">
+            <div class="info-container">
+                <h2>ℹ️ Safety Information & Responsibilities</h2>
+                <p>This section summarizes key safety information that all workers and supervisors must know.</p>
+
+                <div class="info-cards">
+                    <div class="info-card red-card">
+                        <h3>🔴 Safety Alerts & Color Code</h3>
+                        <p>Always check the current <strong>safety color code of the day</strong> and any active safety alerts posted on site.</p>
+                        <ul class="small-list">
+                            <li>🟢 <strong>Green</strong> – Normal operations, standard controls.</li>
+                            <li>🟡 <strong>Yellow</strong> – Elevated risk, apply additional controls and close supervision.</li>
+                            <li>🟠 <strong>Orange</strong> – High risk, restrict certain activities and increase monitoring.</li>
+                            <li>🔴 <strong>Red</strong> – Very high risk, consider stopping work until risks are controlled.</li>
+                        </ul>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>📌 Your Safety Responsibilities</h3>
+                        <ul class="small-list">
+                            <li>✅ Follow all safety rules, procedures, and supervisors’ instructions.</li>
+                            <li>🧠 Stop work if you believe it is unsafe and inform your supervisor immediately.</li>
+                            <li>📢 Report all unsafe conditions, near misses, and incidents through this app or other channels.</li>
+                            <li>🦺 Always wear and use the required PPE correctly.</li>
+                            <li>🤝 Look out for your colleagues and intervene if you see unsafe behaviour.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Emergency & GPS Section -->
+                <div class="info-section">
+                    <h3>🆘 In Case of Emergency</h3>
+                    <p>If someone is injured or you see a serious hazard:</p>
+                    <ol class="small-list">
+                        <li>🚨 Raise the alarm and call for help.</li>
+                        <li>✅ Ensure your own safety first before helping others.</li>
+                        <li>📞 Call the site emergency number or government services (997 / 998 / 999).</li>
+                        <li>📍 Share your GPS location when possible.</li>
+                        <li>📝 Report the incident or near miss after the situation is under control.</li>
+                    </ol>
+                    <button class="link-button" onclick="openModal('emergencyModal')">
+                        View full Emergency Contacts & GPS Guide
+                    </button>
+                    <button class="link-button" onclick="openModal('incidentClassificationModal')">
+                        View Incident Classification Guide
+                    </button>
+                </div>
+
+                <!-- Heat & Hydration Section -->
+                <div class="info-section">
+                    <h3>🌡️ Heat Stress & Hydration</h3>
+                    <p>Working in high temperatures can quickly lead to heat illness. Key rules:</p>
+                    <ul class="small-list">
+                        <li>💧 Drink water regularly, even if you are not thirsty.</li>
+                        <li>🕒 Take rest breaks in shaded or cooled areas as per heat plan.</li>
+                        <li>👕 Wear light, breathable clothing where possible under PPE.</li>
+                        <li>👀 Watch for signs of heat stress in yourself and others.</li>
+                        <li>📢 Report immediately if you or someone else feels dizzy, confused, or unwell.</li>
+                    </ul>
+                    <button class="link-button" onclick="openModal('heatIllnessModal')">
+                        Learn about types of heat illness
+                    </button>
+                </div>
+
+                <!-- Toolbox Talks Section -->
+                <div class="info-section">
+                    <h3>🧑‍🏫 Toolbox Talk of the Day</h3>
+                    <p>The selected Toolbox Talk (TBT) of the day is shown below. Use it at the start of your shift.</p>
+                    <div id="tbtOfTheDayBox" class="tbt-box">
+                        <p>Loading TBT of the day...</p>
+                    </div>
+                    <button class="link-button" onclick="openJSATab()">
+                        Search all JSA / JHA / TBT
+                    </button>
+                </div>
+
+                <!-- Useful Links -->
+                <div class="info-section">
+                    <h3>🔗 Useful Safety Links</h3>
+                    <ul class="link-list">
+                        <li><a href="https://www.osha.gov/construction" target="_blank"><i class="fas fa-link"></i> OSHA Construction Safety</a></li>
+                        <li><a href="https://www.cdc.gov/niosh/construction/" target="_blank"><i class="fas fa-link"></i> NIOSH Construction Program</a></li>
+                        <li><a href="https://www.heat.gov" target="_blank"><i class="fas fa-link"></i> Heat.gov – Heat Safety Resources</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPIs Tab -->
+        <div id="SafetyDataTab" class="tab-content" style="display: none;">
+            <div class="kpi-overview">
+                <h2>📊 Safety KPIs Overview</h2>
+                <p>This section provides high-level metrics related to safety observations and incidents.</p>
+
+                <div class="kpi-grid">
+                    <div class="kpi-card kpi-today">
+                        <span class="kpi-label">Today's Observations</span>
+                        <span class="kpi-value" id="kpiToday">--</span>
+                        <span class="kpi-note">Number of observations submitted today.</span>
+                    </div>
+                    <div class="kpi-card kpi-week">
+                        <span class="kpi-label">This Week</span>
+                        <span class="kpi-value" id="kpiWeek">--</span>
+                        <span class="kpi-note">Observations logged in the current week.</span>
+                    </div>
+                    <div class="kpi-card kpi-month">
+                        <span class="kpi-label">This Month</span>
+                        <span class="kpi-value" id="kpiMonth">--</span>
+                        <span class="kpi-note">Total observations recorded this month.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="leaderboard-section">
+                <h2>🏅 Employee of the Month</h2>
+                <p>Summary based on scores obtained from safety observations, near misses, and positive contributions to site safety.</p>
+                <div id="eomLoading" class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i> Loading data from sheet...
+                </div>
+                <div id="eomContent" style="display:none;">
+                    <div class="eom-highlight">
+                        <h3>Top Employee</h3>
+                        <p><strong id="topEmployeeName">-</strong> (<span id="topEmployeeZone">-</span>)</p>
+                        <p class="kpi-note">Points: <span id="topEmployeePoints">-</span></p>
+                    </div>
+                    <button class="link-button" onclick="openModal('leaderboardModal')">
+                        View full monthly leaderboard
+                    </button>
+                </div>
+                <p id="eomError" style="color:var(--danger-color); display:none; margin-top:10px;"></p>
+            </div>
+        </div>
+    </div>
+
+    <a id="addObservationButton" href="https://docs.google.com/forms/d/e/1FAIpQLSfYED_4UfHcmWn0fQOjtR5s8A0-Bhr4dwpe-80GjKkLeTR_Lw/viewform?usp=header" target="_blank">
+        <i class="fas fa-plus"></i> Add New Observation
+    </a>
+
+    <div class="nav-bar">
+        <div class="nav-button" data-color="#17a2b8" onclick="openTab(event, 'NewsTab')">
+            <span class="nav-icon"><i class="fas fa-bullhorn"></i></span>
+            <span>News</span>
+        </div>
+        <div class="nav-button" data-color="#28a745" onclick="openTab(event, 'SafetyDataTab')">
+            <span class="nav-icon"><i class="fas fa-chart-bar"></i></span>
+            <span>Safety Data</span>
+        </div>
+        <div class="nav-button" data-color="#ffc107" onclick="openTab(event, 'TasksTab')">
+            <span class="nav-icon"><i class="fas fa-tasks"></i></span>
+            <span>Daily Tasks</span>
+        </div>
+        <div class="nav-button" data-color="#007bff" onclick="openTab(event, 'JSATab')">
+            <span class="nav-icon"><i class="fas fa-book"></i></span>
+            <span>JSA / TBT</span>
+        </div>
+        <div class="nav-button" data-color="#6f42c1" onclick="openTab(event, 'DocsTab')">
+            <span class="nav-icon"><i class="fas fa-folder"></i></span>
+            <span>Docs</span>
+        </div>
+        <div class="nav-button" data-color="#20c997" onclick="openTab(event, 'ToolsTab')">
+            <span class="nav-icon"><i class="fas fa-tools"></i></span>
+            <span>Tools</span>
+        </div>
+        <div class="nav-button active" style="background-color: var(--danger-color)" onclick="openTab(event, 'InfoTab')"> 
+            <span class="nav-icon"><i class="fas fa-circle-info"></i></span>
+            <span>Info</span>
+        </div>
+    </div>
+</div>
+
+<script src="js/main.js" defer></script>
+</body>
+</html>
+
