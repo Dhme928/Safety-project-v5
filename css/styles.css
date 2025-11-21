@@ -1,1 +1,730 @@
-kk
+/* 🟢 3. توحيد الألوان باستخدام متغيرات CSS */
+:root {
+  /* Light Mode Colors (Defaults) */
+  --primary-color: #FF6F00; /* Darker, richer orange */
+  --secondary-color: #2C3E50; /* Dark blue/almost black */
+  --accent-light: #ECF0F1; /* Light grey for subtle backgrounds */
+  --text-muted: #7F8C8D; /* Muted grey for secondary text */
+  --border-color: #BDC3C7; /* Light grey for borders */
+  --success-color: #27AE60; /* Green for success/positive */
+  --danger-color: #C0392B; /* Red for danger/emergency */
+  --jsa-color: #3498DB; /* Blue for JSA tab */
+  --kpi-color: #8e44ad; /* 🆕 Purple for KPI tab */
+  --heat-color: #e67e22; /* 🆕 Orange for Heat Stress */
+  --wind-color: #00BCD4; /* 🆕 Cyan/Blue for Wind Speed */
+  --background-color: #FFFFFF; /* Main white background */
+  --body-background-color: var(--accent-light); /* Off-white for body */
+  --text-color: #2C3E50; /* Main text color */
+  --card-background: #FFFFFF; /* Card/Panel background */
+  --modal-background: #fefefe; /* Modal content background */
+  --hover-background: #E0E5E9; /* Hover on accordion/button */
+  --header-background-color: #C0392B; /* Using Red for Safety Group Identity */
+  
+  /* Dark Mode Colors (Custom Properties) */
+  --dark-bg: #1e1e1e;
+  --dark-card-bg: #2d2d2d;
+  --dark-text: #f0f0f0;
+  --dark-muted-text: #a0a0a0;
+  --dark-border: #444444;
+  --dark-hover-bg: #3c3c3c;
+
+
+  /* متغيرات العرض الافتراضية للجوال */
+  --app-max-width: 500px;
+  --app-height: 90vh;
+  --app-margin: 0 auto;
+}
+
+/* 🌙 Dark Mode Override */
+.dark-mode {
+    --background-color: var(--dark-card-bg); 
+    --body-background-color: var(--dark-bg);
+    --text-color: var(--dark-text);
+    --text-muted: var(--dark-muted-text); 
+    --border-color: var(--dark-border);
+    --card-background: var(--dark-card-bg);
+    --accent-light: var(--dark-hover-bg); 
+    --modal-background: var(--dark-card-bg);
+    --secondary-color: var(--dark-text); /* Use light text color for secondary elements (e.g. header text) */
+    --hover-background: var(--dark-hover-bg);
+    --app-container-shadow: 0 8px 20px rgba(255,255,255,0.05); /* Lighter shadow for dark mode */
+    --header-background-color: #1a1a1a; /* 🛑 خلفية الهيدر الداكنة */
+}
+
+
+/* ======================================= */
+/* === القواعد الافتراضية (الجوال أولاً) === */
+/* ======================================= */
+
+body {
+    font-family: 'Lato', sans-serif; /* Body text font */
+    margin:0;
+    padding:0;
+    background-color:var(--body-background-color); /* متغير جديد */
+    height:100vh;
+    overflow:hidden;
+    color: var(--text-color); /* لون النص الافتراضي */
+    transition: background-color 0.3s, color 0.3s; /* لتنعيم الانتقال */
+}
+.app-container {
+    display:flex;
+    flex-direction:column;
+    height: var(--app-height);
+    max-width: var(--app-max-width); /* حجم الجوال */
+    margin: var(--app-margin);
+    background-color:var(--background-color); /* متغير جديد */
+    box-shadow:var(--app-container-shadow, 0 8px 20px rgba(0,0,0,0.1)); /* متغير جديد */
+    border-radius: 12px; /* More rounded corners */
+    overflow: hidden; /* لمنع بروز العناصر خارج الحدود */
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+.header {
+    text-align:center;
+    padding:20px 20px; /* Slightly more padding */
+    font-family: 'Poppins', sans-serif; /* Heading font */
+    font-size:20px; /* Slightly larger */
+    font-weight:700; /* Heavier weight for impact */
+    background-color:var(--header-background-color); /* 🛑 تم التعديل هنا */
+    color:white;
+    border-bottom:3px solid var(--primary-color); /* Thicker accent line */
+    position: relative; /* For the gradient effect */
+    overflow: hidden;
+}
+/* Gradient overlay for header */
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* نستخدم نفس الألوان ولكن بشفافية */
+    background: linear-gradient(135deg, rgba(255,111,0,0.1) 0%, var(--secondary-color, rgba(44,62,80,0.1)) 100%);
+    z-index: 0;
+}
+.header span {
+    position: relative;
+    z-index: 1;
+}
+
+.content-area {
+    flex-grow:1;
+    overflow-y:auto;
+    /* 🟢 التعديل الأول: زيادة الهامش السفلي لمنع تغطية الزر العائم للمحتوى */
+    margin-bottom:90px; /* كانت 65px */
+    padding: 15px; /* Add some general padding for content */
+}
+.tab-content {
+    display:none;
+    height:100%;
+    box-sizing: border-box; /* لحساب الـ padding داخل الـ height */
+}
+.tab-content.active {
+    display:block;
+     animation: fadeIn 0.3s ease;
+}
+/* ارتفاع الإطارات: يعتمد على ارتفاع التاب */
+iframe {
+    width:100%;
+    height:calc(100% - 0px); /* Adjust for content-area padding */
+    border:none;
+    border-radius: 8px; /* Rounded corners for iframes */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Subtle shadow for iframes */
+}
+/* ارتفاع محتوى المعلومات */
+#InfoTab, #ToolsTab {
+    overflow-y:auto;
+    max-height:calc(100% - 0px); /* Adjust for content-area padding */
+    padding-bottom:100px;
+}
+
+/* 🟢 2. تعديل بطاقة الأخبار لـ UX */
+.announcement-card {
+    background-color:var(--card-background); /* متغير جديد */
+    border-radius:10px; /* More rounded */
+    margin-bottom:15px; /* More space */
+    padding:18px; /* More padding */
+    box-shadow:0 4px 10px rgba(0,0,0,0.08); /* Softer shadow */
+    border-left:6px solid var(--primary-color); /* Thicker accent border */
+    cursor:pointer;
+    position: relative;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.3s;
+}
+.dark-mode .announcement-card {
+    box-shadow:0 4px 10px rgba(255,255,255,0.05);
+}
+.announcement-card:hover {
+    transform: translateY(-3px);
+    box-shadow:0 6px 15px rgba(0,0,0,0.12);
+}
+.card-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight:600;
+    color:var(--text-color); /* متغير جديد */
+    font-size:17px;
+    padding-right: 35px; /* Space for icon */
+    position: relative;
+    text-align: left; /* Align title to left */
+}
+.card-date {
+    font-size:11px;
+    color:var(--text-muted);
+    margin-bottom:12px;
+    border-bottom:1px solid var(--border-color); /* Lighter border */
+    padding-bottom:8px;
+    text-align: left; /* Align date to left */
+}
+.card-content {
+    font-size:14px;
+    color:var(--text-color); /* متغير جديد */
+    display:none;
+    text-align:justify;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dotted var(--border-color);
+    line-height: 1.6; /* Better readability */
+}
+.card-title .toggle-icon {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--primary-color);
+    transition: transform 0.3s ease-in-out;
+    font-size: 16px;
+}
+.card-title.open .toggle-icon {
+    transform: translateY(-50%) rotate(180deg);
+}
+/* نهاية تعديل بطاقة الأخبار */
+
+.info-month {
+    font-family: 'Poppins', sans-serif;
+    font-size:19px;
+    font-weight:700;
+    margin:10px 0 16px 0;
+    text-align:center;
+    color: var(--text-color); /* متغير جديد */
+}
+.accordion {
+    background-color:var(--accent-light);
+    color:var(--text-color); /* اللون الافتراضي للنص */
+    cursor:pointer;
+    padding:15px 18px; /* More padding */
+    width:100%;
+    text-align:left;
+    border:none;
+    outline:none;
+    /* 🔴 مهم: يجب أن تكون Transition على color و background-color */
+    transition:background-color 0.3s ease, transform 0.2s ease, color 0.3s ease; 
+    font-family: 'Lato', sans-serif;
+    font-size:15px;
+    border-radius:8px; /* More rounded */
+    font-weight:700;
+    display: flex;
+    align-items: center;
+    margin-top: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Subtle shadow */
+}
+.accordion:hover {
+    background-color:var(--hover-background); /* متغير جديد */
+    transform: translateY(-2px);
+}
+/* 🛑 التعديل هنا: عند تفعيل الأكورديون - سيتم تجاوزه بالـ JS لتطبيق اللون الديناميكي */
+.accordion.activeAcc {
+    /* سنعتمد على inline style في JS */
+    transform: translateY(-2px);
+}
+
+/* 🛑 التعديل هنا: الرمز يرث لون النص (والذي سيصبح أبيض عند التفعيل) */
+.accordion i {
+    margin-inline-end: 12px; /* More space */
+    font-size: 19px; /* Slightly larger icon */
+    /* الرمز يرث اللون من الأب */
+    color: inherit !important; 
+    transition: color 0.3s ease;
+}
+/* تعديل خاص لزر الطوارئ */
+#emergencyAccordion {
+    /* سنعتمد على data-color=danger-color أو #FF0000 */
+    border: 2px solid var(--danger-color);
+}
+#emergencyAccordion:hover {
+    background-color: var(--danger-color);
+    color: white;
+    border-color: var(--danger-color);
+}
+/* الألوان عند تفعيل زر الطوارئ */
+#emergencyAccordion.activeAcc {
+    background-color: var(--danger-color) !important;
+    color: white !important;
+    border-color: var(--danger-color);
+}
+
+
+.panel {
+    padding:15px 18px; /* More padding */
+    display:none;
+    background-color:var(--card-background); /* متغير جديد */
+    overflow-y:auto;
+    /* 🛑 التعديل هنا: الخط الجانبي يرث اللون المخصص */
+    border-left:5px solid currentColor; 
+    margin-top:10px;
+    border-radius:0 8px 8px 0; /* Only right/bottom rounded for accent */
+    max-height:500px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+.dark-mode .panel {
+     box-shadow: 0 2px 8px rgba(255,255,255,0.05);
+}
+.panel ul, .panel ol {
+    padding-left: 28px; /* Adjust padding for list items */
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+.panel ul li, .panel ol li {
+    margin-bottom: 6px;
+    line-height: 1.5;
+    color: var(--text-color); /* متغير جديد */
+}
+
+/* 🛠️ التعديل هنا: تطبيق النقاط البرتقالية فقط على القوائم غير المرقمة (<ul>) */
+.panel ul li:before {
+    content:"\2022";
+    /* 🛑 التعديل هنا: النقاط ترث لون الأكورديون النشط */
+    color: currentColor; 
+    font-weight:bold;
+    display:inline-block;
+    width:1em;
+    margin-left: -1em;
+}
+
+/* 🆕 إعادة تفعيل الترقيم الافتراضي للقوائم المرقمة (<ol>) بدون نقاط إضافية */
+.panel ol {
+    list-style-type: decimal; /* للتأكد من استخدام الأرقام 1, 2, 3... */
+    padding-left: 25px; /* لإعطاء مساحة للترقيم الافتراضي */
+    margin-top: 5px;
+}
+.panel ol li {
+    list-style-type: decimal;
+    margin-bottom: 5px;
+}
+/* نهاية تعديل القوائم */
+
+/* ======================================= */
+/* === أنماط الأكورديون الخاص بـ JSA (جديد) === */
+/* ======================================= */
+
+/* نستخدم نفس أنماط .accordion و .panel ولكن بفئة مختلفة لضمان الفصل */
+.jsa-accordion-item {
+    /* يرث كل أنماط .accordion */
+    cursor:pointer;
+    padding:15px 18px; 
+    width:100%;
+    text-align:left;
+    border:none;
+    outline:none;
+    transition:background-color 0.3s ease, transform 0.2s ease, color 0.3s ease; 
+    font-family: 'Lato', sans-serif;
+    font-size:15px;
+    border-radius:8px; 
+    font-weight:700;
+    display: flex;
+    align-items: center;
+    margin-top: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+    /* أنماط خاصة به */
+    background-color: var(--accent-light);
+    color: var(--text-color); /* متغير جديد */
+}
+.jsa-accordion-item:hover {
+    background-color:var(--hover-background); /* متغير جديد */
+    transform: translateY(-2px);
+}
+.jsa-accordion-item i {
+    margin-inline-end: 12px;
+    font-size: 19px;
+    color: inherit !important; 
+    transition: color 0.3s ease;
+}
+/* تفعيل الأكورديون (تم تركه للتحكم بواسطة JS) */
+.jsa-accordion-item.activeAcc {
+    transform: translateY(-2px);
+}
+
+
+.jsa-panel {
+    /* يرث كل أنماط .panel */
+    padding:15px 18px; 
+    display:none;
+    background-color:var(--card-background); /* متغير جديد */
+    overflow-y:auto;
+    border-left:5px solid currentColor; /* مهم: ليرث اللون */
+    margin-top:8px;
+    border-radius:0 8px 8px 0; 
+    max-height:500px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+/* تعديل النقاط لـ JSA Panel */
+.jsa-panel ul li:before {
+    content:"\2022";
+    color: currentColor; 
+    font-weight:bold;
+    display:inline-block;
+    width:1em;
+    margin-left: -1em;
+}
+/* نهاية أنماط أكورديون JSA */
+
+
+/* === شريط التنقل - الألوان المخصصة و التحسينات === */
+.nav-bar {
+    display:flex;
+    justify-content:space-around;
+    position:fixed;
+    bottom:0;
+    width:100%;
+    max-width: var(--app-max-width); /* يتبع العرض الأقصى للحاوية */
+    height:65px; /* Slightly taller nav bar */
+    background-color:var(--card-background); /* متغير جديد */
+    box-shadow:0 -5px 20px rgba(0,0,0,0.1); /* Softer shadow upwards */
+    z-index:10;
+    left:50%;
+    transform:translateX(-50%);
+    border-radius: 0 0 12px 12px; /* Match app container corners */
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+.dark-mode .nav-bar {
+    box-shadow:0 -5px 20px rgba(255,255,255,0.05);
+}
+
+.nav-button {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    color:var(--text-muted); /* Muted color for inactive */
+    font-size:12px; /* Slightly larger font */
+    cursor:pointer;
+    width: 16.66%; /* 🟢 Updated to fit 6 buttons */
+    transition:color 0.3s ease, transform 0.2s ease;
+    position: relative;
+    font-family: 'Lato', sans-serif;
+    font-weight: 600;
+    padding: 0 2px; text-align: center;
+}
+
+/* 🛑 التعديل هنا: نعتمد على JavaScript لتطبيق لون الزر النشط */
+.nav-button.active { 
+     /* لون الزر (النص) سيتم تحديده في JavaScript باستخدام data-color */
+     font-weight:bold; 
+     /* نستخدم اللون الحالي للزر النشط كخلفية للخط العلوي */
+     color: inherit; 
+}
+
+/* 🟢 2. إضافة خط علوي للزر النشط */
+.nav-button.active::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; /* Thicker accent line */
+    /* نستخدم "currentColor" ليرث لون الزر النشط (الأخضر، الأصفر، إلخ) */
+    background-color: currentColor; 
+    border-radius: 0 0 5px 5px;
+}
+
+.nav-button:hover { color:var(--primary-color); transform: translateY(-3px); }
+.nav-icon { 
+    font-size:22px; 
+    margin-bottom:4px; 
+    /* نستخدم "currentColor" لكي يرث الرمز لون الزر الأب (.nav-button) */
+    color: currentColor; 
+} 
+
+/* 🟢 4. مؤشر التحميل (Spinner) */
+.loading-spinner {
+    display: flex; justify-content: center; align-items: center; padding: 25px; color: var(--primary-color); font-size: 18px;
+    font-weight: bold;
+}
+.loading-spinner i { margin-right: 10px; font-size: 24px; }
+
+/* MODAL STYLES */
+.modal {
+    display: none; position: fixed; z-index: 20; left: 0; top: 0; width: 100%; height: 100%; overflow: auto;
+    background-color: rgba(0,0,0,0.6); 
+    padding-top: 60px;
+    animation: fadeIn 0.3s ease-out; 
+}
+.modal-content {
+    background-color: var(--modal-background); /* متغير جديد */
+    margin: 5% auto; padding: 25px; border: none; 
+    width: 90%; max-width: 450px; 
+    border-radius: 12px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+    position: relative;
+    animation: slideIn 0.3s ease-out; 
+    transition: background-color 0.3s;
+    color: var(--text-color); /* لضمان أن النص يتبع وضع الألوان */
+}
+.close-btn {
+    color: var(--text-muted); float: right; font-size: 30px; font-weight: bold; cursor: pointer;
+    position: absolute; top: 15px; right: 20px;
+}
+.close-btn:hover, .close-btn:focus { color: var(--danger-color); text-decoration: none; }
+#leaderboardTable { width: 100%; border-collapse: collapse; margin-top: 20px; }
+#leaderboardTable th, #leaderboardTable td { border: 1px solid var(--border-color); padding: 10px; text-align: left; font-size: 14px; }
+#leaderboardTable th { background-color: var(--accent-light); color: var(--secondary-color); text-align: center; font-family: 'Poppins', sans-serif; font-weight: 700; }
+#emergencyContactsModal .modal-content { max-width: 700px; } 
+#emergencyContactsModal table th, #emergencyContactsModal table td { font-size: 13.5px; text-align: center; }
+#emergencyContactsModal table td:nth-child(1), #emergencyContactsModal table td:nth-child(2) { text-align: left; }
+#emergencyContactsModal table a { text-decoration: none; color: var(--danger-color); font-weight: bold; transition: color 0.2s ease; }
+#emergencyContactsModal table a:hover { color: var(--secondary-color); }
+#emergencyContactsModal h2 { color: var(--danger-color); font-family: 'Poppins', sans-serif; }
+#emergencyContactsModal h3 { color: var(--secondary-color); font-family: 'Poppins', sans-serif; }
+
+
+/* 🆕 CSS for Floating Button (Add New Observation) */
+#addObservationButton {
+    position: fixed;
+    bottom: 85px; /* Adjust based on nav-bar height (65px) + desired gap */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 15; /* Above nav bar but below modals */
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 15px 25px;
+    border-radius: 30px; /* Fully rounded */
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: var(--app-max-width); /* To limit its width within the app container */
+    width: calc(100% - 60px); /* Adjust width to fit the container with margin */
+    justify-content: center;
+}
+#addObservationButton:hover {
+    background-color: #E86A00; /* Slightly darker orange */
+    transform: translateX(-50%) scale(1.03);
+}
+/* End Floating Button CSS */
+
+/* 🆕 CSS for JSA Tab Search Bar */
+#jsaSearch {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s, color 0.3s;
+    background-color: var(--card-background); /* متغير جديد */
+    color: var(--text-color); /* متغير جديد */
+}
+#jsaSearch:focus {
+    border-color: var(--jsa-color);
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+    outline: none;
+}
+.dark-mode #jsaSearch {
+     /* لإظهار الـ placeholder في الـ Dark Mode */
+     color: var(--dark-text);
+}
+
+/* 🆕 CSS for Safety Tools Dashboard */
+.tool-toggle-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    background-color: var(--accent-light);
+    border-radius: 25px;
+    padding: 4px;
+}
+.tool-toggle-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: all 0.3s ease;
+}
+.tool-toggle-btn.active-tool {
+    background-color: var(--kpi-color);
+    color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.tool-toggle-btn.active-tool[data-tool="heat"] { background-color: var(--heat-color); }
+.tool-toggle-btn.active-tool[data-tool="wind"] { background-color: var(--wind-color); }
+
+.kpi-card {
+    background-color: var(--card-background);
+    border-radius: 10px;
+    margin-bottom: 15px;
+    padding: 18px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    border-left: 6px solid var(--kpi-color);
+    transition: transform 0.2s ease, background-color 0.3s;
+}
+.dark-mode .kpi-card { box-shadow: 0 4px 10px rgba(255,255,255,0.05); }
+.kpi-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.kpi-title { font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--text-color); font-size: 16px; margin: 0; }
+.kpi-badge { font-size: 10px; padding: 3px 8px; border-radius: 12px; font-weight: bold; text-transform: uppercase; }
+.kpi-badge.leading { background-color: rgba(39, 174, 96, 0.2); color: #27ae60; }
+.kpi-badge.lagging { background-color: rgba(241, 196, 15, 0.2); color: #f39c12; }
+
+.kpi-inputs { background-color: var(--accent-light); padding: 12px; border-radius: 8px; margin-top: 10px; }
+.kpi-input-group { margin-bottom: 10px; }
+.kpi-input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; font-weight: bold; }
+.kpi-input-field { width: 100%; padding: 12px; box-sizing: border-box; border: 2px solid var(--border-color); border-radius: 8px; font-size: 16px; margin-bottom:0; background-color: var(--card-background); color: var(--text-color); }
+.kpi-input-field:focus { outline: none; border-color: var(--kpi-color); }
+.dark-mode .kpi-input-field { color: var(--dark-text); }
+
+.kpi-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 10px; border-top: 1px dashed var(--border-color); }
+.kpi-result-box { text-align: center; }
+.kpi-result-label { font-size: 11px; color: var(--text-muted); }
+.kpi-result-value { font-size: 20px; font-weight: 700; font-family: 'Poppins', sans-serif; }
+.kpi-citation { font-size: 10px; color: var(--text-muted); margin-top: 8px; font-style: italic; }
+
+.text-good { color: var(--success-color); }
+.text-bad { color: var(--danger-color); }
+.text-neutral { color: var(--text-muted); }
+
+#heatIndexResultCard, #windSpeedResultCard {
+    display: none; padding: 25px; border-radius: 12px; color: white; text-align: center; margin-top: 20px; transition: background-color 0.3s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+.heat-value, .wind-value { font-size: 42px; font-weight: 800; margin: 10px 0; font-family: 'Poppins', sans-serif; }
+.heat-category, .wind-category { font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; }
+.heat-recommendations, .wind-recommendations { font-size: 14px; background-color: rgba(0,0,0,0.15); padding: 15px; border-radius: 8px; text-align: left; }
+.heat-recommendations ul, .wind-recommendations ul { margin: 0; padding-left: 20px; }
+
+/* 🆕 CSS for GPS Button */
+.gps-btn { width: 100%; padding: 12px; margin-top:10px; background-color: var(--secondary-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Poppins', sans-serif; font-weight: bold; transition: background-color 0.3s; }
+.gps-btn:hover { background-color: #1a252f; }
+.gps-result { margin-top: 10px; font-size: 13px; word-break: break-all; color: var(--text-color); }
+
+/* ------------------------------------- */
+/* 🟢 أنماط النافذة المنبثقة لتأكيد JSA */
+/* ------------------------------------- */
+#jsaConfirmationModal .modal-content {
+    margin: 15% auto; 
+    padding: 20px;
+    width: 90%; 
+    max-width: 400px; 
+    text-align: center;
+}
+#jsaConfirmationModal h2 {
+    font-family: 'Poppins', sans-serif;
+    color: var(--jsa-color);
+    margin-top: 0;
+}
+#jsaConfirmationModal p {
+    color: var(--text-color); /* متغير جديد */
+    font-size: 15px;
+    margin: 20px 0;
+}
+.drive-button {
+    display: block;
+    padding: 12px 20px;
+    margin-top: 25px;
+    background-color: var(--jsa-color); 
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+.drive-button:hover {
+    background-color: #2980b9;
+}
+
+
+/* Keyframe Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+
+/* ======================================= */
+/* 🆕 أنماط زر تبديل الوضع (Dark/Light Mode) */
+/* ======================================= */
+.mode-toggle {
+    position: absolute;
+    top: 25px;
+    right: 20px; 
+    cursor: pointer;
+    color: white; /* Always white on the dark header */
+    font-size: 20px;
+    transition: transform 0.2s;
+    z-index: 2;
+}
+.mode-toggle:hover {
+    transform: scale(1.1);
+}
+
+/* ======================================= */
+/* === استعلام الوسائط لشاشات الكمبيوتر === */
+/* ======================================= */
+@media (min-width: 768px) {
+    /* تغيير المتغيرات الخاصة بالعرض لشاشة الكمبيوتر */
+    :root {
+        --app-max-width: 1000px; 
+        --app-height: 95vh;
+        --app-margin: 2.5vh auto;
+    }
+
+    /* ضبط ارتفاع الإطارات لتناسب الحاوية الأكبر */
+    iframe {
+        height: 100%;
+    }
+
+    /* ضبط ارتفاع محتوى المعلومات */
+     #InfoTab, #ToolsTab {
+        height: 100%;
+        max-height: 100%;
+        padding-bottom: 80px; 
+    }
+
+    /* مساحة المحتوى */
+     /* 🟢 التعديل الأول: تطبيق الهامش الإضافي على الكمبيوتر أيضاً */
+    .content-area {
+        margin-bottom: 150px; 
+    }
+
+    /* شريط التنقل يتبع العرض الجديد للحاوية */
+    .nav-bar {
+        max-width: var(--app-max-width);
+        border-radius: 0 0 12px 12px;
+    }
+    
+    /* Floating Button for Desktop */
+    #addObservationButton {
+         max-width: 400px; /* Limit width on desktop */
+         width: auto;
+    }
+
+    /* Flexbox for better modal centering on desktop */
+    .modal {
+        padding-top: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-content {
+        margin: auto; 
+    }
+    
+    #kpiListContainer { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+}
