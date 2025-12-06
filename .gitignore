@@ -1,0 +1,7 @@
+node_modules
+.env
+npm-debug.log*
+
+# Uploads directory - keep only placeholder file
+uploads/*
+!uploads/.gitkeep
