@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Safety Observer App</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="img/CAT.jpeg" type="image/jpeg">
+</head>
+<body class="light-mode">
+  <div class="app-container">
+    <header class="app-header">
+      <div class="header-title-area">
+        <img src="img/CAT.jpeg" alt="Logo" class="header-logo">
+        <div class="header-text">
+          <h1>Safety Observer</h1>
+          <p class="header-subtitle">Saudi Safety Group</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="points-display" id="pointsDisplay" style="display:none;">
+          <i class="fas fa-star"></i> <span id="userPoints">0</span> pts
+        </span>
+        <button class="header-btn" id="themeToggle" onclick="toggleTheme()">
+          <i class="fas fa-moon" id="themeIcon"></i>
+        </button>
+        <button class="header-btn" id="logoutBtn" onclick="logout()" style="display:none;">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="main-content" id="mainContent">
+      <div id="loginScreen" class="auth-screen">
+        <div class="auth-card">
+          <img src="img/CAT.jpeg" alt="Logo" class="auth-logo">
+          <h2>Welcome Back</h2>
+          <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+              <label>Employee ID</label>
+              <input type="text" id="loginEmployeeId" required placeholder="Enter Employee ID">
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" id="loginPassword" required placeholder="Enter Password">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Login</button>
+          </form>
+          <p class="auth-switch">Don't have an account? <a href="#" onclick="showRegister()">Register</a></p>
+        </div>
+      </div>
+
+      <div id="registerScreen" class="auth-screen" style="display:none;">
+        <div class="auth-card">
+          <img src="img/CAT.jpeg" alt="Logo" class="auth-logo">
+          <h2>Create Account</h2>
+          <form id="registerForm" onsubmit="handleRegister(event)">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="regName" required placeholder="Enter Full Name">
+            </div>
+            <div class="form-group">
+              <label>Employee ID</label>
+              <input type="text" id="regEmployeeId" required placeholder="Enter Employee ID">
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" id="regPassword" required placeholder="Create Password">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Register</button>
+          </form>
+          <p class="auth-switch">Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
+        </div>
+      </div>
+
+      <div id="appContent" style="display:none;">
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card" onclick="switchTab('observations')">
+            <i class="fas fa-eye"></i>
+            <div class="stat-value" id="statObservations">0</div>
+            <div class="stat-label">Observations</div>
+          </div>
+          <div class="stat-card" onclick="switchTab('permits')">
+            <i class="fas fa-clipboard-check"></i>
+            <div class="stat-value" id="statPermits">0</div>
+            <div class="stat-label">Permits</div>
+          </div>
+          <div class="stat-card" onclick="switchTab('equipment')">
+            <i class="fas fa-truck"></i>
+            <div class="stat-value" id="statEquipment">0</div>
+            <div class="stat-label">Equipment</div>
+          </div>
+          <div class="stat-card" onclick="showLeaderboard()">
+            <i class="fas fa-trophy"></i>
+            <div class="stat-value" id="statUsers">0</div>
+            <div class="stat-label">Users</div>
+          </div>
+        </div>
+
+        <section class="tab-content active" id="homeTab">
+          <div class="section-header">
+            <h2>Quick Actions</h2>
+          </div>
+          <div class="quick-actions">
+            <button class="action-btn" onclick="showAddObservation()">
+              <i class="fas fa-plus-circle"></i> Add Observation
+            </button>
+            <button class="action-btn" onclick="showAddPermit()">
+              <i class="fas fa-file-alt"></i> Add Permit
+            </button>
+            <button class="action-btn" onclick="showAddEquipment()">
+              <i class="fas fa-truck"></i> Add Equipment
+            </button>
+          </div>
+          <div class="recent-section">
+            <h3><i class="fas fa-clock"></i> Recent Activity</h3>
+            <div id="recentActivity">Loading...</div>
+          </div>
+        </section>
+
+        <section class="tab-content" id="observationsTab">
+          <div class="section-header">
+            <h2><i class="fas fa-eye"></i> Observations</h2>
+            <button class="btn btn-primary" onclick="showAddObservation()">
+              <i class="fas fa-plus"></i> Add
+            </button>
+          </div>
+          <div id="observationsList" class="items-list">Loading...</div>
+        </section>
+
+        <section class="tab-content" id="permitsTab">
+          <div class="section-header">
+            <h2><i class="fas fa-clipboard-check"></i> Permits</h2>
+            <button class="btn btn-primary" onclick="showAddPermit()">
+              <i class="fas fa-plus"></i> Add
+            </button>
+          </div>
+          <div id="permitsList" class="items-list">Loading...</div>
+        </section>
+
+        <section class="tab-content" id="equipmentTab">
+          <div class="section-header">
+            <h2><i class="fas fa-truck"></i> Heavy Equipment</h2>
+            <button class="btn btn-primary" onclick="showAddEquipment()">
+              <i class="fas fa-plus"></i> Add
+            </button>
+          </div>
+          <div id="equipmentList" class="items-list">Loading...</div>
+        </section>
+
+        <section class="tab-content" id="settingsTab">
+          <div class="section-header">
+            <h2><i class="fas fa-cog"></i> Settings</h2>
+          </div>
+          <div class="settings-list">
+            <div class="setting-item">
+              <div class="setting-info">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+              </div>
+              <span id="userName">User</span>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <i class="fas fa-id-badge"></i>
+                <span>Employee ID</span>
+              </div>
+              <span id="userEmployeeId">-</span>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <i class="fas fa-star"></i>
+                <span>Points</span>
+              </div>
+              <span id="settingsPoints">0</span>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <i class="fas fa-medal"></i>
+                <span>Level</span>
+              </div>
+              <span id="userLevel">Bronze</span>
+            </div>
+            <div class="setting-item" onclick="toggleTheme()">
+              <div class="setting-info">
+                <i class="fas fa-moon"></i>
+                <span>Dark Mode</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="darkModeSwitch">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="setting-item admin-only" id="adminSection" style="display:none;" onclick="showAdminPanel()">
+              <div class="setting-info">
+                <i class="fas fa-shield-alt"></i>
+                <span>Admin Panel</span>
+              </div>
+              <i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="setting-item danger" onclick="logout()">
+              <div class="setting-info">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+              </div>
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-content" id="adminTab">
+          <div class="section-header">
+            <h2><i class="fas fa-shield-alt"></i> Admin Panel</h2>
+            <button class="btn btn-secondary" onclick="switchTab('settings')">
+              <i class="fas fa-arrow-left"></i> Back
+            </button>
+          </div>
+          <div class="admin-tabs">
+            <button class="admin-tab active" onclick="showAdminSection('users')">Users</button>
+            <button class="admin-tab" onclick="showAdminSection('allObs')">All Observations</button>
+            <button class="admin-tab" onclick="showAdminSection('allPermits')">All Permits</button>
+            <button class="admin-tab" onclick="showAdminSection('allEquip')">All Equipment</button>
+          </div>
+          <div id="adminContent">
+            <div id="adminUsers" class="admin-section active"></div>
+            <div id="adminAllObs" class="admin-section" style="display:none;"></div>
+            <div id="adminAllPermits" class="admin-section" style="display:none;"></div>
+            <div id="adminAllEquip" class="admin-section" style="display:none;"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <nav class="bottom-nav" id="bottomNav" style="display:none;">
+      <button class="nav-item active" data-tab="home" onclick="switchTab('home')">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+      </button>
+      <button class="nav-item" data-tab="observations" onclick="switchTab('observations')">
+        <i class="fas fa-eye"></i>
+        <span>Observe</span>
+      </button>
+      <button class="nav-item" data-tab="permits" onclick="switchTab('permits')">
+        <i class="fas fa-clipboard-check"></i>
+        <span>Permits</span>
+      </button>
+      <button class="nav-item" data-tab="equipment" onclick="switchTab('equipment')">
+        <i class="fas fa-truck"></i>
+        <span>Equipment</span>
+      </button>
+      <button class="nav-item" data-tab="settings" onclick="switchTab('settings')">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </button>
+    </nav>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Modal</h3>
+        <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <span id="toastMessage"></span>
+  </div>
+
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" alt="Evidence">
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
