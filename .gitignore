@@ -1,7 +1,24 @@
-node_modules
-.env
-npm-debug.log*
+# Dependencies
+node_modules/
 
-# Uploads directory - keep only placeholder file
+# Database
+data/*.db
+
+# Uploads
 uploads/*
 !uploads/.gitkeep
+
+# Environment
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
+npm-debug.log*
