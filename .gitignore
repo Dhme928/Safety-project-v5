@@ -3,21 +3,23 @@ node_modules/
 
 # Database
 data/*.db
-
-# Uploads
-uploads/*
-!uploads/.gitkeep
+data/*.db-wal
+data/*.db-shm
 
 # Environment
 .env
+
+# Uploads (keep directory, ignore files)
+uploads/*
+!uploads/.gitkeep
 
 # OS files
 .DS_Store
 Thumbs.db
 
 # IDE
-.idea/
 .vscode/
+.idea/
 
 # Logs
 *.log
