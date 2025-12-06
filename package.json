@@ -1,0 +1,17 @@
+{
+  "name": "safety-observer-lite",
+  "version": "1.0.0",
+  "description": "Safety dashboard with Google Sheets plus backend evidence uploads",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node server/index.js",
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.22.1",
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.16.3"
+  }
+}
