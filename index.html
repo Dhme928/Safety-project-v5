@@ -1,0 +1,3530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet"/>
+  <link href="img/CAT.jpeg" rel="icon" type="image/jpeg"/>
+  <title>Safety Observer</title>
+  <link href="css/styles.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body class="light-mode">
+  <div class="app-container">
+    <header class="app-header">
+      <div class="header-title-area">
+        <img alt="CAT Logo" class="header-logo" src="img/CAT.jpeg"/>
+        <div class="header-text">
+          <h1>Safety Observer</h1>
+          <p class="header-subtitle">Saudi Safety Group - CAT Project</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="points-display" id="pointsDisplay" style="display:none;">
+          <i class="fas fa-star"></i>
+          <span id="userPoints">0</span>
+        </div>
+        <div class="header-badge" id="headerBadge" style="display:none;" title="Your Badge">
+          <i class="fas fa-medal"></i>
+        </div>
+        <button class="news-toggle" id="newsToggleButton" type="button" title="News">
+          <i class="fas fa-bullhorn"></i>
+          <span class="header-dot" id="newsDot" style="display:none;"></span>
+        </button>
+        <button class="inbox-toggle" id="inboxToggleButton" type="button" title="Inbox" style="display:none;" onclick="openInboxModal()">
+          <i class="fas fa-inbox"></i>
+          <span class="header-dot" id="inboxDot" style="display:none;"></span>
+        </button>
+        <div class="notification-bell-wrapper" id="notificationBellWrapper" style="display:none;">
+          <button class="notification-bell" id="notificationBell" type="button" title="Notifications" onclick="toggleNotificationsDropdown()">
+            <i class="fas fa-bell"></i>
+            <span class="notification-badge" id="notificationBadge" style="display:none;">0</span>
+          </button>
+          <div class="notifications-dropdown" id="notificationsDropdown" style="display:none;">
+            <div class="notifications-header">
+              <h4>Notifications</h4>
+              <button onclick="markAllNotificationsRead()">Mark all read</button>
+            </div>
+            <div class="notifications-list" id="notificationsList">
+              <p class="no-notifications">No notifications</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="modal" id="loginModal">
+      <div class="modal-content auth-modal">
+        <h2><i class="fas fa-hard-hat"></i> Welcome</h2>
+        <div id="authTabs" class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">Login</button>
+          <button class="auth-tab" data-tab="register">Register</button>
+        </div>
+        <form id="loginForm" class="auth-form">
+          <input type="text" id="loginEmployeeId" placeholder="Employee ID" required/>
+          <input type="password" id="loginPassword" placeholder="Password" required/>
+          <button type="submit" class="auth-submit-btn">Login</button>
+          <p class="auth-error" id="loginError"></p>
+        </form>
+        <form id="registerForm" class="auth-form" style="display:none;">
+          <input type="text" id="regEmployeeId" placeholder="Employee ID" required/>
+          <input type="text" id="regName" placeholder="Full Name" required/>
+          <input type="password" id="regPassword" placeholder="Password" required/>
+          <button type="submit" class="auth-submit-btn">Register</button>
+          <p class="auth-error" id="registerError"></p>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="newsModal">
+      <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('newsModal')">×</button>
+        <h2><i class="fas fa-bullhorn"></i> News & Announcements</h2>
+        <div id="newsContainer">Loading...</div>
+      </div>
+    </div>
+
+    <!-- Inbox Modal -->
+    <div class="modal" id="inboxModal">
+      <div class="modal-content inbox-modal">
+        <button class="close-btn" onclick="closeModal('inboxModal')">×</button>
+        <h2><i class="fas fa-inbox"></i> Inbox</h2>
+        <div class="inbox-tabs">
+          <button class="inbox-tab active" data-tab="received" onclick="switchInboxTab('received')">Received</button>
+          <button class="inbox-tab" data-tab="sent" onclick="switchInboxTab('sent')" id="sentTabBtn" style="display:none;">Sent</button>
+        </div>
+        <div id="inboxReceivedContainer" class="inbox-container">
+          <div class="loading-inbox"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+        </div>
+        <div id="inboxSentContainer" class="inbox-container" style="display:none;">
+          <div class="loading-inbox"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+        </div>
+        <button class="send-task-btn" id="sendTaskBtn" style="display:none;" onclick="openSendTaskModal()">
+          <i class="fas fa-paper-plane"></i> Send Task Request
+        </button>
+      </div>
+    </div>
+
+    <!-- Send Task Request Modal -->
+    <div class="modal" id="sendTaskModal">
+      <div class="modal-content send-task-modal">
+        <button class="close-btn" onclick="closeModal('sendTaskModal')">×</button>
+        <h2><i class="fas fa-paper-plane"></i> Send Task Request</h2>
+        <form id="sendTaskForm">
+          <div class="form-group">
+            <label><i class="fas fa-user"></i> Select Recipient</label>
+            <select id="taskRecipient" required>
+              <option value="">-- Select a user --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-tasks"></i> Task Message</label>
+            <textarea id="taskMessage" placeholder="Describe the task (e.g., Inspect truck #123 in Area A)..." rows="4" required></textarea>
+          </div>
+          <button type="submit" class="submit-task-btn"><i class="fas fa-paper-plane"></i> Send Request</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Task Response Modal -->
+    <div class="modal" id="taskResponseModal">
+      <div class="modal-content task-response-modal">
+        <button class="close-btn" onclick="closeModal('taskResponseModal')">×</button>
+        <h2><i class="fas fa-reply"></i> Respond to Task</h2>
+        <div id="taskResponseDetails"></div>
+        <form id="taskResponseForm">
+          <input type="hidden" id="responseTaskId"/>
+          <div class="form-group">
+            <label><i class="fas fa-comment"></i> Your Response</label>
+            <textarea id="responseText" placeholder="Describe what you did..." rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-paperclip"></i> Attach Photo/Document (optional)</label>
+            <input type="file" id="responseAttachment" accept="image/*,.pdf,.doc,.docx"/>
+          </div>
+          <button type="submit" class="submit-response-btn"><i class="fas fa-check"></i> Submit Response</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="leaderboardModal">
+      <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('leaderboardModal')">×</button>
+        <h2><i class="fas fa-trophy"></i> Monthly Leaderboard</h2>
+        <div id="leaderboardContainer">Loading...</div>
+      </div>
+    </div>
+
+    <div class="modal" id="aboutModal">
+      <div class="modal-content about-modal-content">
+        <button class="close-btn" onclick="closeModal('aboutModal')" style="position:absolute;top:1rem;right:1rem;z-index:10;background:rgba(255,255,255,0.2);color:#fff">×</button>
+        <div class="about-header">
+          <img src="img/CAT.jpeg" alt="Safety Observer Logo" class="about-logo">
+          <h2 class="about-title">Safety Observer</h2>
+          <p class="about-version">Version 3.0.0</p>
+        </div>
+        <div class="about-body">
+          <div class="about-section">
+            <div class="about-section-title">Organization</div>
+            <div class="about-org">Saudi Safety Group</div>
+            <div class="about-project">Aramco CAT Project</div>
+          </div>
+          <div class="about-section">
+            <div class="about-section-title">Developers</div>
+            <div class="developers-list">
+              <div class="developer-card">
+                <img src="img/dev-abdulrahman.jpg" alt="Abdulrahman Alanazi" class="developer-avatar-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+                <div class="developer-avatar" style="display:none">AA</div>
+                <div class="developer-info">
+                  <div class="developer-name">Abdulrahman Alanazi</div>
+                  <div class="developer-id">ID: 8222802</div>
+                </div>
+                <a href="https://www.linkedin.com/in/3nzi" target="_blank" rel="noopener noreferrer" class="developer-linkedin">
+                  <i class="fab fa-linkedin-in"></i>
+                </a>
+              </div>
+              <div class="developer-card">
+                <img src="img/dev-abdullah.jpg" alt="Abdullah Alkaluf" class="developer-avatar-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+                <div class="developer-avatar" style="display:none">AK</div>
+                <div class="developer-info">
+                  <div class="developer-name">Abdullah Alkaluf</div>
+                  <div class="developer-id">ID: 8230855</div>
+                </div>
+                <a href="https://www.linkedin.com/in/abdullah-alkaluf/" target="_blank" rel="noopener noreferrer" class="developer-linkedin">
+                  <i class="fab fa-linkedin-in"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="about-section">
+            <p class="about-copyright">© 2025 Saudi Safety Group. All Rights Reserved.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="dailyInspectionModal">
+      <div class="modal-content form-modal excavation-inspection-modal">
+        <button class="close-btn" onclick="closeModal('dailyInspectionModal')">×</button>
+        <h2><i class="fas fa-clipboard-check"></i> Daily Excavation Inspection</h2>
+        <p class="form-description">CSM II-1 compliant inspection checklist. Complete before each shift.</p>
+        
+        <form id="dailyInspectionForm" onsubmit="submitDailyInspection(event)">
+          <input type="hidden" id="inspExcId" value=""/>
+          
+          <div class="form-group">
+            <label>Select Excavation *</label>
+            <select id="inspExcavationId" required>
+              <option value="">-- Select Excavation --</option>
+            </select>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Inspection Date *</label>
+              <input type="date" id="inspDate" required/>
+            </div>
+            <div class="form-group">
+              <label>Inspection Time *</label>
+              <input type="time" id="inspTime" required/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Inspector Name *</label>
+            <input type="text" id="inspInspector" required/>
+          </div>
+
+          <div class="inspection-checklist">
+            <h4><i class="fas fa-list-check"></i> Visual Inspection Checklist</h4>
+            
+            <div class="checklist-item">
+              <label>Soil Condition</label>
+              <select id="inspSoilCondition" required>
+                <option value="">-- Select --</option>
+                <option value="stable">Stable - No changes</option>
+                <option value="minor_changes">Minor Changes - Monitor</option>
+                <option value="unstable">Unstable - Action Required</option>
+              </select>
+            </div>
+            
+            <div class="checklist-item">
+              <label>Protective System Condition</label>
+              <select id="inspShoringCondition" required>
+                <option value="">-- Select --</option>
+                <option value="good">Good - Fully functional</option>
+                <option value="minor_issues">Minor Issues - Repairs needed</option>
+                <option value="damaged">Damaged - STOP WORK</option>
+                <option value="na">N/A - No protective system</option>
+              </select>
+            </div>
+            
+            <div class="checklist-item">
+              <label>Ladder Access (within 25ft/7.5m)</label>
+              <select id="inspLadderSpacing" required>
+                <option value="">-- Select --</option>
+                <option value="compliant">Compliant</option>
+                <option value="non_compliant">Non-Compliant - Fix Required</option>
+                <option value="na">N/A - No worker entry</option>
+              </select>
+            </div>
+            
+            <div class="checklist-item">
+              <label>Spoil Pile Distance (min 0.6m from edge)</label>
+              <select id="inspSpoilDistance" required>
+                <option value="">-- Select --</option>
+                <option value="compliant">Compliant (≥0.6m)</option>
+                <option value="non_compliant">Non-Compliant</option>
+                <option value="na">N/A - No spoil pile</option>
+              </select>
+            </div>
+            
+            <div class="checklist-item">
+              <label>Water Accumulation</label>
+              <select id="inspWaterAccumulation" required>
+                <option value="">-- Select --</option>
+                <option value="none">None</option>
+                <option value="minor">Minor - Pumping in place</option>
+                <option value="significant">Significant - Action Required</option>
+              </select>
+            </div>
+            
+            <div class="checklist-item">
+              <label>Barricades & Warning Signs</label>
+              <select id="inspBarricades" required>
+                <option value="">-- Select --</option>
+                <option value="adequate">Adequate</option>
+                <option value="needs_improvement">Needs Improvement</option>
+                <option value="missing">Missing - STOP WORK</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="inspection-checklist">
+            <h4><i class="fas fa-wind"></i> Atmospheric Monitoring</h4>
+            <div class="csm-alert csm-alert-info">
+              <i class="fas fa-info-circle"></i>
+              <span>Required for excavations >1.2m with potential hazardous atmosphere</span>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label>Oxygen Level (%) *</label>
+                <input type="number" id="inspOxygenLevel" step="0.1" min="0" max="100" placeholder="19.5-23.5 safe" required/>
+                <span class="form-hint">Safe: 19.5% - 23.5%</span>
+              </div>
+              <div class="form-group">
+                <label>LEL (%) *</label>
+                <input type="number" id="inspLelLevel" step="0.1" min="0" max="100" placeholder="<10% safe" required/>
+                <span class="form-hint">Safe: &lt;10%</span>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label>H2S (ppm) *</label>
+                <input type="number" id="inspH2sLevel" step="0.1" min="0" placeholder="<10 safe" required/>
+                <span class="form-hint">Safe: &lt;10 ppm</span>
+              </div>
+              <div class="form-group">
+                <label>CO (ppm) *</label>
+                <input type="number" id="inspCoLevel" step="0.1" min="0" placeholder="<25 safe" required/>
+                <span class="form-hint">Safe: &lt;25 ppm</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Overall Status *</label>
+            <select id="inspOverallStatus" required onchange="toggleInspectionActions()">
+              <option value="">-- Select --</option>
+              <option value="pass">Pass - Safe to Continue</option>
+              <option value="conditional">Conditional - Corrections Needed</option>
+              <option value="fail">Fail - STOP WORK</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="inspActionsGroup" style="display:none;">
+            <label>Corrective Actions Required</label>
+            <textarea id="inspCorrectiveActions" rows="3" placeholder="Describe required corrective actions..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Additional Notes</label>
+            <textarea id="inspNotes" rows="2" placeholder="Any additional observations or notes..."></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" onclick="closeModal('dailyInspectionModal')">Cancel</button>
+            <button type="submit" class="btn-submit">
+              <i class="fas fa-save"></i> Submit Inspection
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="viewExcavationModal">
+      <div class="modal-content view-excavation-modal">
+        <button class="close-btn" onclick="closeModal('viewExcavationModal')">×</button>
+        <div id="viewExcavationContent">Loading...</div>
+        <div class="view-excavation-actions">
+          <button class="btn-edit" onclick="editExcavation()"><i class="fas fa-edit"></i> Edit</button>
+          <button class="btn-inspection" onclick="openDailyInspectionForExcavation()"><i class="fas fa-clipboard-check"></i> New Inspection</button>
+          <button class="btn-complete" id="excCompleteBtn" onclick="completeExcavation()"><i class="fas fa-check"></i> Mark Complete</button>
+          <button class="btn-suspend" id="excSuspendBtn" onclick="suspendExcavation()"><i class="fas fa-pause"></i> Suspend</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="addEventModal">
+      <div class="modal-content form-modal">
+        <button class="close-btn" onclick="closeModal('addEventModal')">×</button>
+        <h2 id="eventModalTitle"><i class="fas fa-calendar-plus"></i> Add Event</h2>
+        <form id="addEventForm" onsubmit="saveCalendarEvent(event)">
+          <input type="hidden" id="eventId" value=""/>
+          <input type="text" id="eventTitle" placeholder="Event Title" required/>
+          <input type="date" id="eventDate" required/>
+          <select id="eventType" required>
+            <option value="">-- Select Type --</option>
+            <option value="Meeting">Meeting</option>
+            <option value="Walkthrough">Walkthrough</option>
+            <option value="Drill">Drill</option>
+            <option value="Campaign">Campaign</option>
+            <option value="Holiday">Holiday</option>
+          </select>
+          <textarea id="eventNotes" placeholder="Notes (optional)" rows="3"></textarea>
+          <div class="file-upload-area">
+            <label><i class="fas fa-paperclip"></i> Attachments (Images, PDF, DOC)</label>
+            <input type="file" id="eventAttachments" multiple accept="image/*,.pdf,.doc,.docx"/>
+            <div id="eventAttachmentsList" class="attachments-preview"></div>
+          </div>
+          <div class="event-status-display" id="eventStatusDisplay" style="display:none;">
+            <label>Status:</label>
+            <span id="eventStatusText" class="status-pill"></span>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" onclick="closeModal('addEventModal')">Cancel</button>
+            <button type="submit" class="btn-submit">Save Event</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="viewEventModal">
+      <div class="modal-content view-event-modal">
+        <button class="close-btn" onclick="closeModal('viewEventModal')">×</button>
+        <div class="view-event-header">
+          <h2 id="viewEventTitle">Event Title</h2>
+          <span id="viewEventTypeBadge" class="event-type-badge">Type</span>
+        </div>
+        <div class="view-event-body">
+          <div class="event-detail-row">
+            <i class="fas fa-calendar"></i>
+            <span id="viewEventDate">Date</span>
+          </div>
+          <div class="event-detail-row" id="viewEventNotesRow">
+            <i class="fas fa-sticky-note"></i>
+            <span id="viewEventNotes">Notes</span>
+          </div>
+          <div class="event-detail-row">
+            <i class="fas fa-info-circle"></i>
+            <span>Status: </span>
+            <span id="viewEventStatus" class="status-pill"></span>
+          </div>
+          <div class="event-detail-row">
+            <i class="fas fa-user"></i>
+            <span id="viewEventCreatedBy">Created by</span>
+          </div>
+          <div class="event-attachments-section" id="viewEventAttachmentsSection" style="display:none;">
+            <h4><i class="fas fa-paperclip"></i> Attachments</h4>
+            <div id="viewEventAttachments" class="event-attachments-list"></div>
+          </div>
+        </div>
+        <div class="view-event-actions" id="viewEventActions">
+          <button id="editEventBtn" class="btn-edit" onclick="openEditEventModal()" style="display:none;">
+            <i class="fas fa-edit"></i> Edit
+          </button>
+          <button id="approveEventBtn" class="btn-approve" onclick="approveCalendarEvent()" style="display:none;">
+            <i class="fas fa-check"></i> Approve
+          </button>
+          <button id="completeEventBtn" class="btn-complete" onclick="completeCalendarEvent()" style="display:none;">
+            <i class="fas fa-check-double"></i> Complete
+          </button>
+          <button id="deleteEventBtn" class="btn-delete" onclick="deleteCalendarEvent()" style="display:none;">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="emergencyContactsModal">
+      <div class="modal-content emergency-modal-content">
+        <button class="close-btn emergency-close-btn" onclick="closeModal('emergencyContactsModal')">×</button>
+        
+        <div class="emergency-header">
+          <div class="emergency-header-icon">
+            <i class="fas fa-ambulance"></i>
+          </div>
+          <div class="emergency-header-text">
+            <h2>Emergency Contacts</h2>
+            <p>Tap any number to call immediately</p>
+          </div>
+        </div>
+
+        <div class="emergency-priority-section">
+          <div class="emergency-priority-card" onclick="window.location.href='tel:0543133645'">
+            <div class="priority-icon"><i class="fas fa-phone-alt"></i></div>
+            <div class="priority-info">
+              <span class="priority-label">CAT EMERGENCY HOTLINE</span>
+              <span class="priority-number">054 313 3645</span>
+            </div>
+            <div class="priority-action"><i class="fas fa-chevron-right"></i></div>
+          </div>
+          <div class="emergency-priority-card clinic" onclick="window.location.href='tel:0569180911'">
+            <div class="priority-icon"><i class="fas fa-hospital"></i></div>
+            <div class="priority-info">
+              <span class="priority-label">HARADH CLINIC</span>
+              <span class="priority-number">056 918 0911</span>
+            </div>
+            <div class="priority-action"><i class="fas fa-chevron-right"></i></div>
+          </div>
+        </div>
+
+        <div class="emergency-section">
+          <div class="emergency-section-header">
+            <i class="fas fa-building"></i>
+            <span>Internal Contacts</span>
+          </div>
+          <div class="emergency-contacts-grid">
+            <div class="emergency-contact-card management">
+              <div class="contact-category"><i class="fas fa-user-tie"></i> Management</div>
+              <div class="contact-item" onclick="window.location.href='tel:0505817134'">
+                <span class="contact-name">Maher A. Jardali</span>
+                <span class="contact-role">Operation Manager</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 050 581 7134</span>
+              </div>
+              <div class="contact-item" onclick="window.location.href='tel:0505366873'">
+                <span class="contact-name">Rifat Mehmood</span>
+                <span class="contact-role">Project Manager</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 050 536 6873</span>
+              </div>
+            </div>
+            <div class="emergency-contact-card hsse">
+              <div class="contact-category"><i class="fas fa-hard-hat"></i> HSSE Team</div>
+              <div class="contact-item" onclick="window.location.href='tel:0543133645'">
+                <span class="contact-name">Shahzad Ahmad Khan</span>
+                <span class="contact-role">HSSE Manager</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 054 313 3645</span>
+              </div>
+              <div class="contact-item" onclick="window.location.href='tel:0544303677'">
+                <span class="contact-name">Om Prakash</span>
+                <span class="contact-role">HSSE Coordinator</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 054 430 3677</span>
+              </div>
+              <div class="contact-item" onclick="window.location.href='tel:0592399222'">
+                <span class="contact-name">Hasan Almarzooq</span>
+                <span class="contact-role">HSSE Supervisor</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 059 239 9222</span>
+              </div>
+              <div class="contact-item" onclick="window.location.href='tel:0595820934'">
+                <span class="contact-name">Tauqeer Nabi</span>
+                <span class="contact-role">Environmental Coordinator</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 059 582 0934</span>
+              </div>
+            </div>
+            <div class="emergency-contact-card engineering">
+              <div class="contact-category"><i class="fas fa-cogs"></i> Engineering</div>
+              <div class="contact-item" onclick="window.location.href='tel:0551367496'">
+                <span class="contact-name">Mahmoud Al Cheikh</span>
+                <span class="contact-role">Project Engineer</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 055 136 7496</span>
+              </div>
+              <div class="contact-item" onclick="window.location.href='tel:0500291404'">
+                <span class="contact-name">Adnan Ghemrawi</span>
+                <span class="contact-role">Project Engineer (Hydrotest)</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 050 029 1404</span>
+              </div>
+              <div class="contact-item" onclick="window.location.href='tel:0539039724'">
+                <span class="contact-name">Hassan El Cherbagi</span>
+                <span class="contact-role">Project Engineer</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 053 903 9724</span>
+              </div>
+              <div class="contact-item" onclick="window.location.href='tel:0508838541'">
+                <span class="contact-name">Hadi Hamdi</span>
+                <span class="contact-role">Mechanical Engineer</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 050 883 8541</span>
+              </div>
+              <div class="contact-item" onclick="window.location.href='tel:0553713952'">
+                <span class="contact-name">Imad El Hage</span>
+                <span class="contact-role">Project PMV Manager</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 055 371 3952</span>
+              </div>
+              <div class="contact-item" onclick="window.location.href='tel:0504838832'">
+                <span class="contact-name">Rabih Hassan</span>
+                <span class="contact-role">Sr. Civil Engineer</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 050 483 8832</span>
+              </div>
+            </div>
+            <div class="emergency-contact-card medical">
+              <div class="contact-category"><i class="fas fa-user-md"></i> Medical Team</div>
+              <div class="contact-item" onclick="window.location.href='tel:0537934638'">
+                <span class="contact-name">Dr. Shoiab</span>
+                <span class="contact-role">CAT Doctor</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 053 793 4638</span>
+              </div>
+              <div class="contact-item" onclick="window.location.href='tel:0531551924'">
+                <span class="contact-name">Romelle M. Pagayon</span>
+                <span class="contact-role">Male Nurse</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 053 155 1924</span>
+              </div>
+              <div class="contact-item" onclick="window.location.href='tel:0576563119'">
+                <span class="contact-name">Arif Khan</span>
+                <span class="contact-role">Safety Officer/BLS/First Aider</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 057 656 3119</span>
+              </div>
+              <div class="contact-item" onclick="window.location.href='tel:0506735217'">
+                <span class="contact-name">Joe Franco V. Yabut</span>
+                <span class="contact-role">CAT First Aider</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 050 673 5217</span>
+              </div>
+              <div class="contact-item" onclick="window.location.href='tel:0593886520'">
+                <span class="contact-name">Shahid Bhatti</span>
+                <span class="contact-role">Ambulance Driver</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 059 388 6520</span>
+              </div>
+            </div>
+            <div class="emergency-contact-card operations">
+              <div class="contact-category"><i class="fas fa-truck"></i> Operations & Logistics</div>
+              <div class="contact-item" onclick="window.location.href='tel:0539195375'">
+                <span class="contact-name">Taha Ghemrawi</span>
+                <span class="contact-role">Sr. Transport Officer</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 053 919 5375</span>
+              </div>
+              <div class="contact-item" onclick="window.location.href='tel:0502884442'">
+                <span class="contact-name">Abdul Karim</span>
+                <span class="contact-role">Material Supervisor</span>
+                <span class="contact-phone"><i class="fas fa-phone"></i> 050 288 4442</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="emergency-section external-section">
+          <div class="emergency-section-header external">
+            <i class="fas fa-globe"></i>
+            <span>External Services</span>
+          </div>
+          <div class="external-services-grid">
+            <div class="external-service-card hospitals">
+              <div class="service-category"><i class="fas fa-hospital-alt"></i> Hospitals</div>
+              <div class="service-item" onclick="window.location.href='tel:0135720911'">
+                <span class="service-name">Southern Area (Abqaiq)</span>
+                <span class="service-phone"><i class="fas fa-phone"></i> 013 572 0911</span>
+              </div>
+              <div class="service-item" onclick="window.location.href='tel:0135849000'">
+                <span class="service-name">Nadec Hospital (Haradh)</span>
+                <span class="service-phone"><i class="fas fa-phone"></i> 013 584 9000</span>
+              </div>
+              <div class="service-item" onclick="window.location.href='tel:0135844000'">
+                <span class="service-name">Al Ahsa Hospital (Al Hofuf)</span>
+                <span class="service-phone"><i class="fas fa-phone"></i> 013 584 4000</span>
+              </div>
+            </div>
+            <div class="external-service-card government">
+              <div class="service-category"><i class="fas fa-shield-alt"></i> Government Services</div>
+              <div class="govt-service" onclick="window.location.href='tel:998'">
+                <div class="govt-icon fire"><i class="fas fa-fire-extinguisher"></i></div>
+                <div class="govt-info">
+                  <span class="govt-name">Civil Defense (Fire)</span>
+                  <span class="govt-number">998</span>
+                </div>
+              </div>
+              <div class="govt-service" onclick="window.location.href='tel:997'">
+                <div class="govt-icon ambulance"><i class="fas fa-ambulance"></i></div>
+                <div class="govt-info">
+                  <span class="govt-name">Red Crescent (Ambulance)</span>
+                  <span class="govt-number">997</span>
+                </div>
+              </div>
+              <div class="govt-service" onclick="window.location.href='tel:999'">
+                <div class="govt-icon police"><i class="fas fa-shield-alt"></i></div>
+                <div class="govt-info">
+                  <span class="govt-name">Local Police</span>
+                  <span class="govt-number">999</span>
+                </div>
+              </div>
+              <div class="govt-service" onclick="window.location.href='tel:993'">
+                <div class="govt-icon traffic"><i class="fas fa-car-crash"></i></div>
+                <div class="govt-info">
+                  <span class="govt-name">Traffic Accidents</span>
+                  <span class="govt-number">993</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="addObservationModal">
+      <div class="modal-content form-modal">
+        <button class="close-btn" onclick="closeModal('addObservationModal')">×</button>
+        <h2><i class="fas fa-eye"></i> Add Observation</h2>
+        <form id="addObservationForm">
+          <div class="form-row">
+            <input type="date" id="obsDate" required/>
+            <input type="time" id="obsTime"/>
+          </div>
+          <div class="form-group">
+            <label>Area</label>
+            <div class="area-select-wrapper">
+              <select id="obsAreaSelect" required>
+                <option value="">-- Select Area --</option>
+              </select>
+              <button type="button" class="add-new-btn" onclick="showAddAreaInput()"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="addAreaInput" class="add-new-input" style="display:none;">
+              <input type="text" id="newAreaName" placeholder="New area name"/>
+              <button type="button" class="btn-add-area" onclick="addNewArea()">Add</button>
+              <button type="button" class="btn-cancel-area" onclick="hideAddAreaInput()">Cancel</button>
+            </div>
+          </div>
+          <input type="text" id="obsLocation" placeholder="Specific Location"/>
+          <div class="observation-class-toggle">
+            <label>Observation Class</label>
+            <div class="toggle-buttons">
+              <button type="button" class="toggle-btn positive" id="btnPositive" onclick="setObservationClass('Positive')">
+                <i class="fas fa-thumbs-up"></i> Positive
+              </button>
+              <button type="button" class="toggle-btn negative active" id="btnNegative" onclick="setObservationClass('Negative')">
+                <i class="fas fa-thumbs-down"></i> Negative
+              </button>
+            </div>
+            <input type="hidden" id="obsClass" value="Negative"/>
+          </div>
+          <select id="obsActivityType">
+            <option value="">-- Activity Type --</option>
+          </select>
+          <select id="obsType">
+            <option value="">-- Observation Type --</option>
+          </select>
+          <textarea id="obsDescription" placeholder="Description of observation" rows="3" required></textarea>
+          <div class="form-group">
+            <label>Direct Cause</label>
+            <div class="area-select-wrapper">
+              <select id="obsDirectCauseSelect">
+                <option value="">-- Select Direct Cause --</option>
+              </select>
+              <button type="button" class="add-new-btn" onclick="showAddDirectCauseInput()"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="addDirectCauseInput" class="add-new-input" style="display:none;">
+              <input type="text" id="newDirectCauseName" placeholder="New direct cause"/>
+              <button type="button" class="btn-add-area" onclick="addNewDirectCause()">Add</button>
+              <button type="button" class="btn-cancel-area" onclick="hideAddDirectCauseInput()">Cancel</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Root Cause</label>
+            <div class="area-select-wrapper">
+              <select id="obsRootCauseSelect">
+                <option value="">-- Select Root Cause --</option>
+              </select>
+              <button type="button" class="add-new-btn" onclick="showAddRootCauseInput()"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="addRootCauseInput" class="add-new-input" style="display:none;">
+              <input type="text" id="newRootCauseName" placeholder="New root cause"/>
+              <button type="button" class="btn-add-area" onclick="addNewRootCause()">Add</button>
+              <button type="button" class="btn-cancel-area" onclick="hideAddRootCauseInput()">Cancel</button>
+            </div>
+          </div>
+          <textarea id="obsImmediateAction" placeholder="Immediate Action Taken" rows="2"></textarea>
+          <textarea id="obsCorrectiveAction" placeholder="Corrective Action Required" rows="2"></textarea>
+          <select id="obsRiskLevel">
+            <option value="Low">Low Risk</option>
+            <option value="Medium" selected>Medium Risk</option>
+            <option value="High">High Risk</option>
+          </select>
+          <div class="injury-section" id="injurySection" style="display:none;">
+            <label class="section-label"><i class="fas fa-first-aid"></i> Injury Details (if applicable)</label>
+            <select id="obsInjuryType">
+              <option value="">-- Injury Type --</option>
+              <option value="Cut/Laceration">Cut/Laceration</option>
+              <option value="Burn">Burn</option>
+              <option value="Fracture">Fracture</option>
+              <option value="Sprain/Strain">Sprain/Strain</option>
+              <option value="Bruise/Contusion">Bruise/Contusion</option>
+              <option value="Eye Injury">Eye Injury</option>
+              <option value="Hearing Damage">Hearing Damage</option>
+              <option value="Respiratory">Respiratory</option>
+              <option value="Heat Stress">Heat Stress</option>
+              <option value="Other">Other</option>
+            </select>
+            <select id="obsInjuryBodyPart">
+              <option value="">-- Body Part Affected --</option>
+              <option value="Head">Head</option>
+              <option value="Eyes">Eyes</option>
+              <option value="Face">Face</option>
+              <option value="Neck">Neck</option>
+              <option value="Shoulder">Shoulder</option>
+              <option value="Arm">Arm</option>
+              <option value="Hand">Hand</option>
+              <option value="Fingers">Fingers</option>
+              <option value="Chest">Chest</option>
+              <option value="Back">Back</option>
+              <option value="Abdomen">Abdomen</option>
+              <option value="Leg">Leg</option>
+              <option value="Knee">Knee</option>
+              <option value="Foot">Foot</option>
+              <option value="Toes">Toes</option>
+              <option value="Multiple">Multiple Body Parts</option>
+            </select>
+          </div>
+          <div class="file-upload-area">
+            <label><i class="fas fa-camera"></i> Evidence Photos</label>
+            <div class="photo-capture-row">
+              <button type="button" class="take-photo-btn" onclick="document.getElementById('obsCameraCapture').click()">
+                <i class="fas fa-camera"></i> Take Photo
+              </button>
+              <button type="button" class="upload-photo-btn" onclick="document.getElementById('obsPhotos').click()">
+                <i class="fas fa-images"></i> Choose Files
+              </button>
+            </div>
+            <input type="file" id="obsCameraCapture" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoCapture(this, 'obsPhotos')"/>
+            <input type="file" id="obsPhotos" accept="image/*" multiple style="display:none" onchange="previewPhotos(this, 'obsPhotoPreview')"/>
+            <div id="obsPhotoPreview" class="photo-preview-grid"></div>
+          </div>
+          <button type="submit" class="submit-btn"><i class="fas fa-plus-circle"></i> Add Observation (+10 pts)</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="closeObservationModal">
+      <div class="modal-content form-modal">
+        <button class="close-btn" onclick="closeModal('closeObservationModal')">×</button>
+        <h2><i class="fas fa-check-circle"></i> Close Observation</h2>
+        <form id="closeObservationForm">
+          <input type="hidden" id="closeObsId"/>
+          <textarea id="closeObsNotes" placeholder="Closure notes - what was done to resolve this?" rows="4" required></textarea>
+          <div class="file-upload-area">
+            <label><i class="fas fa-camera"></i> Closure Evidence Photos</label>
+            <input type="file" id="closeObsPhotos" accept="image/*" multiple/>
+          </div>
+          <button type="submit" class="submit-btn"><i class="fas fa-check"></i> Close Observation (+5 pts)</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="addDailyReportModal">
+      <div class="modal-content form-modal daily-report-modal">
+        <button class="close-btn" onclick="closeModal('addDailyReportModal')">×</button>
+        <h2><i class="fas fa-clipboard-list"></i> Daily Manpower & Equipment Report</h2>
+        <div id="dailyReportAutoFillNotice" class="autofill-notice" style="display:none;">
+          <i class="fas fa-info-circle"></i> <span id="autoFillText">Loading previous data...</span>
+        </div>
+        <form id="addDailyReportForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Date *</label>
+              <input type="date" id="dailyReportDate" required onchange="checkDailyReportAutoFill()"/>
+            </div>
+            <div class="form-group">
+              <label>Area *</label>
+              <select id="dailyReportArea" required onchange="checkDailyReportAutoFill()">
+                <option value="">-- Select Area --</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Location Details</label>
+            <input type="text" id="dailyReportLocation" placeholder="e.g., X-ray Banker Yard"/>
+          </div>
+          
+          <div class="daily-report-section">
+            <div class="section-title"><i class="fas fa-users"></i> Man Power Details</div>
+            <div class="form-row triple">
+              <div class="form-group">
+                <label>Total Manpower</label>
+                <input type="number" id="dailyReportTotalManpower" min="0" value="0"/>
+              </div>
+              <div class="form-group">
+                <label>Manpower CAT</label>
+                <input type="number" id="dailyReportManpowerCat" min="0" value="0"/>
+              </div>
+              <div class="form-group">
+                <label>Manpower Rental</label>
+                <input type="number" id="dailyReportManpowerRental" min="0" value="0"/>
+              </div>
+            </div>
+          </div>
+          
+          <div class="daily-report-section">
+            <div class="section-title"><i class="fas fa-truck"></i> Equipment CAT</div>
+            <div id="equipmentCatContainer" class="equipment-grid"></div>
+          </div>
+          
+          <div class="daily-report-section">
+            <div class="section-title"><i class="fas fa-dolly"></i> Equipment RENTAL</div>
+            <div id="equipmentRentalContainer" class="equipment-grid"></div>
+          </div>
+          
+          <button type="submit" class="submit-btn"><i class="fas fa-save"></i> Save Daily Report</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="viewDailyReportModal">
+      <div class="modal-content daily-report-view-modal">
+        <button class="close-btn" onclick="closeModal('viewDailyReportModal')">×</button>
+        <div class="daily-report-view-header">
+          <h2><i class="fas fa-clipboard-list"></i> <span id="viewDailyReportTitle">Daily Report</span></h2>
+          <button class="print-btn" onclick="printDailyReport()"><i class="fas fa-print"></i> Print</button>
+        </div>
+        <div id="viewDailyReportContent" class="daily-report-view-content"></div>
+      </div>
+    </div>
+
+    <div class="modal" id="addPermitModal">
+      <div class="modal-content form-modal">
+        <button class="close-btn" onclick="closeModal('addPermitModal')">×</button>
+        <h2><i class="fas fa-clipboard-check"></i> Add Permit</h2>
+        <form id="addPermitForm">
+          <input type="date" id="permitDate" required/>
+          <div class="form-group">
+            <label>Area</label>
+            <div class="area-select-wrapper">
+              <select id="permitArea" required>
+                <option value="">-- Select Area --</option>
+              </select>
+              <button type="button" class="add-new-btn" onclick="showAddPermitAreaInput()"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="addPermitAreaInput" class="add-new-input" style="display:none;">
+              <input type="text" id="newPermitAreaName" placeholder="New permit area"/>
+              <button type="button" class="btn-add-area" onclick="addNewPermitArea()">Add</button>
+              <button type="button" class="btn-cancel-area" onclick="hideAddPermitAreaInput()">Cancel</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Permit Type</label>
+            <div class="area-select-wrapper">
+              <select id="permitType">
+                <option value="">-- Permit Type --</option>
+              </select>
+              <button type="button" class="add-new-btn" onclick="showAddPermitTypeInput()"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="addPermitTypeInput" class="add-new-input" style="display:none;">
+              <input type="text" id="newPermitTypeName" placeholder="New permit type"/>
+              <button type="button" class="btn-add-area" onclick="addNewPermitType()">Add</button>
+              <button type="button" class="btn-cancel-area" onclick="hideAddPermitTypeInput()">Cancel</button>
+            </div>
+          </div>
+          <input type="text" id="permitNumber" placeholder="Permit Number"/>
+          <input type="text" id="permitProject" placeholder="Project"/>
+          <input type="text" id="permitReceiver" placeholder="Permit Receiver"/>
+          <input type="text" id="permitIssuer" placeholder="Permit Issuer"/>
+          <textarea id="permitDescription" placeholder="Work Description" rows="3"></textarea>
+          <button type="submit" class="submit-btn"><i class="fas fa-plus-circle"></i> Add Permit (+8 pts)</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="addEquipmentModal">
+      <div class="modal-content form-modal">
+        <button class="close-btn" onclick="closeModal('addEquipmentModal')">×</button>
+        <h2><i class="fas fa-truck"></i> Add Equipment</h2>
+        <form id="addEquipmentForm">
+          <input type="text" id="eqAssetNumber" placeholder="Asset Number" required/>
+          <div class="form-group">
+            <label>Equipment Type</label>
+            <div class="area-select-wrapper">
+              <select id="eqType" required>
+                <option value="">-- Equipment Type --</option>
+              </select>
+              <button type="button" class="add-new-btn" onclick="showAddEquipmentTypeInput()"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="addEquipmentTypeInput" class="add-new-input" style="display:none;">
+              <input type="text" id="newEquipmentTypeName" placeholder="New equipment type"/>
+              <button type="button" class="btn-add-area" onclick="addNewEquipmentType()">Add</button>
+              <button type="button" class="btn-cancel-area" onclick="hideAddEquipmentTypeInput()">Cancel</button>
+            </div>
+          </div>
+          <input type="text" id="eqOwner" placeholder="Owner/Company"/>
+          <div class="form-group">
+            <label>Yard/Area</label>
+            <div class="area-select-wrapper">
+              <select id="eqYardArea">
+                <option value="">-- Yard/Area --</option>
+              </select>
+              <button type="button" class="add-new-btn" onclick="showAddYardAreaInput()"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="addYardAreaInput" class="add-new-input" style="display:none;">
+              <input type="text" id="newYardAreaName" placeholder="New yard/area"/>
+              <button type="button" class="btn-add-area" onclick="addNewYardArea()">Add</button>
+              <button type="button" class="btn-cancel-area" onclick="hideAddYardAreaInput()">Cancel</button>
+            </div>
+          </div>
+          <select id="eqStatus">
+            <option value="In Service">In Service</option>
+            <option value="Out of Service">Out of Service</option>
+          </select>
+          <select id="eqPwas">
+            <option value="">PWAS Required?</option>
+            <option value="Yes">PWAS Needed</option>
+            <option value="No">PWAS Not Needed</option>
+          </select>
+          <div class="form-row">
+            <div><label>TPS Date</label><input type="date" id="eqTpsDate"/></div>
+            <div><label>TPS Expiry</label><input type="date" id="eqTpsExpiry"/></div>
+          </div>
+          <div class="form-row">
+            <div><label>INS Date</label><input type="date" id="eqInsDate"/></div>
+            <div><label>INS Expiry</label><input type="date" id="eqInsExpiry"/></div>
+          </div>
+          <input type="text" id="eqOperator" placeholder="Operator Name"/>
+          <input type="text" id="eqLicense" placeholder="Operator License"/>
+          <textarea id="eqNotes" placeholder="Notes" rows="2"></textarea>
+          <button type="submit" class="submit-btn"><i class="fas fa-plus-circle"></i> Add Equipment</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="addTbtModal">
+      <div class="modal-content form-modal">
+        <button class="close-btn" onclick="closeModal('addTbtModal')">×</button>
+        <h2><i class="fas fa-chalkboard-teacher"></i> Add Toolbox Talk</h2>
+        <form id="addTbtForm">
+          <input type="date" id="tbtDate" required/>
+          <div class="form-group">
+            <label>Topic</label>
+            <div class="area-select-wrapper">
+              <select id="tbtTopic" required>
+                <option value="">-- Select Topic --</option>
+              </select>
+              <button type="button" class="add-new-btn" onclick="showAddTbtTopicInput()"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="addTbtTopicInput" class="add-new-input" style="display:none;">
+              <input type="text" id="newTbtTopicName" placeholder="New TBT topic"/>
+              <button type="button" class="btn-add-area" onclick="addNewTbtTopic()">Add</button>
+              <button type="button" class="btn-cancel-area" onclick="hideAddTbtTopicInput()">Cancel</button>
+            </div>
+          </div>
+          <input type="text" id="tbtPresenter" placeholder="Presenter"/>
+          <div class="form-group">
+            <label>Area</label>
+            <div class="area-select-wrapper">
+              <select id="tbtAreaSelect">
+                <option value="">-- Select Area --</option>
+              </select>
+              <button type="button" class="add-new-btn" onclick="showAddTbtAreaInput()"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="addTbtAreaInput" class="add-new-input" style="display:none;">
+              <input type="text" id="newTbtAreaName" placeholder="New TBT area"/>
+              <button type="button" class="btn-add-area" onclick="addNewTbtArea()">Add</button>
+              <button type="button" class="btn-cancel-area" onclick="hideAddTbtAreaInput()">Cancel</button>
+            </div>
+          </div>
+          <input type="number" id="tbtAttendance" placeholder="Number of Attendees" min="0"/>
+          <textarea id="tbtDescription" placeholder="Description/Notes" rows="3"></textarea>
+          <div class="file-upload-area">
+            <label><i class="fas fa-camera"></i> Evidence Photos</label>
+            <input type="file" id="tbtPhotos" accept="image/*" multiple/>
+          </div>
+          <button type="submit" class="submit-btn"><i class="fas fa-plus-circle"></i> Add TBT (+12 pts)</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="addNewsModal">
+      <div class="modal-content form-modal">
+        <button class="close-btn" onclick="closeModal('addNewsModal')">×</button>
+        <h2><i class="fas fa-bullhorn"></i> Post News (Admin)</h2>
+        <form id="addNewsForm">
+          <input type="text" id="newsTitle" placeholder="Title" required/>
+          <textarea id="newsContent" placeholder="Content" rows="4" required></textarea>
+          <select id="newsPriority">
+            <option value="normal">Normal</option>
+            <option value="important">Important</option>
+            <option value="urgent">Urgent</option>
+          </select>
+          <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Post News</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="addChallengeModal">
+      <div class="modal-content form-modal">
+        <button class="close-btn" onclick="closeModal('addChallengeModal');resetChallengeForm()">×</button>
+        <h2 id="challengeModalTitle"><i class="fas fa-tasks"></i> Add Challenge (Admin)</h2>
+        <form id="addChallengeForm">
+          <input type="hidden" id="editChallengeId" value=""/>
+          <input type="text" id="challengeTitle" placeholder="Challenge Title" required/>
+          <textarea id="challengeDescription" placeholder="Description" rows="3"></textarea>
+          <select id="challengeType">
+            <option value="daily">Daily Challenge</option>
+            <option value="weekly">Weekly Challenge</option>
+            <option value="monthly">Monthly Challenge</option>
+          </select>
+          <input type="number" id="challengePoints" placeholder="Points (default: 10)" min="1" value="10"/>
+          <select id="challengeBadgeReward">
+            <option value="">-- No Badge Reward --</option>
+            <option value="Safety Champion">Safety Champion</option>
+            <option value="Observer Pro">Observer Pro</option>
+            <option value="First Aider">First Aider</option>
+            <option value="Team Leader">Team Leader</option>
+            <option value="Risk Buster">Risk Buster</option>
+            <option value="PPE Expert">PPE Expert</option>
+            <option value="Fire Warden">Fire Warden</option>
+            <option value="Challenge Master">Challenge Master</option>
+          </select>
+          <input type="date" id="challengeDate" placeholder="Challenge Date (leave empty for any day)"/>
+          <button type="submit" class="submit-btn" id="challengeSubmitBtn"><i class="fas fa-plus-circle"></i> Create Challenge</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="addQuizQuestionModal">
+      <div class="modal-content form-modal">
+        <button class="close-btn" onclick="closeModal('addQuizQuestionModal');resetQuizQuestionForm()">×</button>
+        <h2 id="quizQuestionModalTitle"><i class="fas fa-question-circle"></i> Add Quiz Question</h2>
+        <form id="addQuizQuestionForm">
+          <input type="hidden" id="editQuizQuestionId" value=""/>
+          <select id="quizQuestionCategory" required>
+            <option value="">-- Select Category --</option>
+            <option value="CSM Requirements">CSM Requirements</option>
+            <option value="PPE Standards">PPE Standards</option>
+            <option value="Work Permits">Work Permits</option>
+            <option value="Heat Stress">Heat Stress</option>
+            <option value="Confined Space">Confined Space</option>
+            <option value="Working at Height">Working at Height</option>
+            <option value="Hot Work Safety">Hot Work Safety</option>
+            <option value="Excavation Safety">Excavation Safety</option>
+            <option value="Lifting Operations">Lifting Operations</option>
+            <option value="Fire Safety">Fire Safety</option>
+            <option value="Emergency Procedures">Emergency Procedures</option>
+            <option value="General Safety">General Safety</option>
+          </select>
+          <textarea id="quizQuestionText" placeholder="Question Text" rows="3" required></textarea>
+          <input type="text" id="quizOptionA" placeholder="Option A" required/>
+          <input type="text" id="quizOptionB" placeholder="Option B" required/>
+          <input type="text" id="quizOptionC" placeholder="Option C" required/>
+          <input type="text" id="quizOptionD" placeholder="Option D" required/>
+          <select id="quizCorrectAnswer" required>
+            <option value="">-- Correct Answer --</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+          </select>
+          <textarea id="quizExplanation" placeholder="Explanation (shown after quiz)" rows="2"></textarea>
+          <button type="submit" class="submit-btn" id="quizQuestionSubmitBtn"><i class="fas fa-plus-circle"></i> Add Question</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="adminRegistryModal">
+      <div class="modal-content registry-modal">
+        <button class="close-btn" onclick="closeModal('adminRegistryModal')">×</button>
+        <h2 id="registryModalTitle"><i class="fas fa-database"></i> Registry</h2>
+        <div class="registry-controls">
+          <input type="text" id="registrySearch" placeholder="Search..." oninput="filterRegistryTable()"/>
+          <button class="export-btn" onclick="exportRegistryCSV()"><i class="fas fa-file-csv"></i> Export CSV</button>
+        </div>
+        <div class="registry-table-container">
+          <table class="registry-table" id="registryTable">
+            <thead id="registryTableHead"></thead>
+            <tbody id="registryTableBody"></tbody>
+          </table>
+        </div>
+        <div id="registryPagination" class="registry-pagination"></div>
+      </div>
+    </div>
+
+    <div class="modal" id="dropdownSettingsModal">
+      <div class="modal-content form-modal" style="max-width:600px;">
+        <button class="close-btn" onclick="closeModal('dropdownSettingsModal')">×</button>
+        <h2 id="dropdownSettingsTitle"><i class="fas fa-cogs"></i> Settings</h2>
+        <div id="dropdownSettingsContent">
+          <div class="settings-tabs" id="settingsTabsContainer"></div>
+          <div class="settings-add-row">
+            <input type="text" id="newSettingItemInput" placeholder="Enter new item name..."/>
+            <button class="submit-btn" onclick="addSettingItem()"><i class="fas fa-plus"></i> Add</button>
+          </div>
+          <div class="settings-list" id="settingsItemsList"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="adminPendingUsersModal">
+      <div class="modal-content form-modal" style="max-width:600px;">
+        <button class="close-btn" onclick="closeModal('adminPendingUsersModal')">×</button>
+        <h2><i class="fas fa-user-clock"></i> Pending Approvals</h2>
+        <div id="pendingUsersContent" class="admin-modal-content">Loading...</div>
+      </div>
+    </div>
+
+    <div class="modal" id="adminManageUsersModal">
+      <div class="modal-content form-modal" style="max-width:700px;">
+        <button class="close-btn" onclick="closeModal('adminManageUsersModal')">×</button>
+        <h2><i class="fas fa-users"></i> Manage Users</h2>
+        <div id="manageUsersContent" class="admin-modal-content">Loading...</div>
+      </div>
+    </div>
+
+    <div class="modal" id="adminChallengesModal">
+      <div class="modal-content form-modal" style="max-width:700px;">
+        <button class="close-btn" onclick="closeModal('adminChallengesModal')">×</button>
+        <h2><i class="fas fa-tasks"></i> Manage Challenges</h2>
+        <div id="challengesModalContent" class="admin-modal-content">Loading...</div>
+      </div>
+    </div>
+
+    <div class="modal" id="adminQuizModal">
+      <div class="modal-content form-modal" style="max-width:700px;">
+        <button class="close-btn" onclick="closeModal('adminQuizModal')">×</button>
+        <h2><i class="fas fa-question-circle"></i> Manage Quiz Questions</h2>
+        <div id="quizModalContent" class="admin-modal-content">Loading...</div>
+      </div>
+    </div>
+
+    <div class="modal" id="viewDetailsModal">
+      <div class="modal-content view-details-modal">
+        <div class="view-details-header">
+          <button class="close-btn" onclick="closeModal('viewDetailsModal')">×</button>
+          <h2 id="viewDetailsTitle"><i class="fas fa-eye"></i> Details</h2>
+          <button class="print-btn" onclick="printDetails()" title="Print/Download PDF">
+            <i class="fas fa-print"></i> Print
+          </button>
+        </div>
+        <div id="viewDetailsContent" class="view-details-body">
+          Loading...
+        </div>
+      </div>
+    </div>
+
+    <main class="content-area">
+      <section class="tab-content active" id="HomeTab">
+        <div class="stats-period-toggle">
+          <button class="period-btn active" data-period="today" onclick="setStatsPeriod('today')">Today</button>
+          <button class="period-btn" data-period="week" onclick="setStatsPeriod('week')">This Week</button>
+          <button class="period-btn" data-period="month" onclick="setStatsPeriod('month')">This Month</button>
+        </div>
+        <div class="home-kpi-row">
+          <div class="home-kpi-card kpi-green">
+            <div class="home-kpi-label" id="homeObsLabel">Observations Today</div>
+            <div class="home-kpi-value" id="homeObsToday">--</div>
+          </div>
+          <div class="home-kpi-card kpi-blue">
+            <div class="home-kpi-label" id="homePermitsLabel">Permits Today</div>
+            <div class="home-kpi-value" id="homePermitsToday">--</div>
+          </div>
+          <div class="home-kpi-card kpi-orange">
+            <div class="home-kpi-label" id="homeTbtLabel">TBT Today</div>
+            <div class="home-kpi-value" id="homeTbtToday">--</div>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <button class="quick-action-btn action-hazard" onclick="openModal('addObservationModal')">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Report Hazard</span>
+          </button>
+          <button class="quick-action-btn action-reports" onclick="openTab(null,'ObservationsTab');loadMyReports()">
+            <i class="fas fa-clipboard-list"></i>
+            <span>My Reports</span>
+          </button>
+          <button class="quick-action-btn action-tasks" onclick="openTab(null,'ObservationsTab');loadPendingTasks()">
+            <i class="fas fa-tasks"></i>
+            <span>Pending Tasks</span>
+          </button>
+          <button class="quick-action-btn action-emergency" onclick="openModal('emergencyContactsModal')">
+            <i class="fas fa-ambulance"></i>
+            <span>Emergency</span>
+          </button>
+        </div>
+
+        <div class="month-color-section" id="colorCodeSection">
+          <div class="month-color-left">
+            <span class="month-color-label">Color Code This Month:</span>
+            <span id="colorName" class="month-color-badge">...</span>
+          </div>
+          <span class="month-color-hint"><i class="fas fa-calendar-alt"></i> View Schedule</span>
+        </div>
+        
+        <div class="color-schedule-modal" id="colorScheduleModal">
+          <div class="color-schedule-content">
+            <div class="color-schedule-header">
+              <h3><i class="fas fa-palette"></i> Monthly Color Code Schedule</h3>
+              <button class="color-schedule-close" id="closeColorScheduleBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="color-schedule-body">
+              <div class="color-schedule-grid">
+                <div class="color-month-card">
+                  <div class="color-month-name">January</div>
+                  <div class="color-month-badge bg-green"><i class="fas fa-check-circle"></i></div>
+                </div>
+                <div class="color-month-card">
+                  <div class="color-month-name">February</div>
+                  <div class="color-month-badge bg-red"><i class="fas fa-fire"></i></div>
+                </div>
+                <div class="color-month-card">
+                  <div class="color-month-name">March</div>
+                  <div class="color-month-badge bg-blue"><i class="fas fa-bolt"></i></div>
+                </div>
+                <div class="color-month-card">
+                  <div class="color-month-name">April</div>
+                  <div class="color-month-badge bg-yellow"><i class="fas fa-exclamation-triangle"></i></div>
+                </div>
+                <div class="color-month-card">
+                  <div class="color-month-name">May</div>
+                  <div class="color-month-badge bg-green"><i class="fas fa-check-circle"></i></div>
+                </div>
+                <div class="color-month-card">
+                  <div class="color-month-name">June</div>
+                  <div class="color-month-badge bg-red"><i class="fas fa-fire"></i></div>
+                </div>
+                <div class="color-month-card">
+                  <div class="color-month-name">July</div>
+                  <div class="color-month-badge bg-blue"><i class="fas fa-bolt"></i></div>
+                </div>
+                <div class="color-month-card">
+                  <div class="color-month-name">August</div>
+                  <div class="color-month-badge bg-yellow"><i class="fas fa-exclamation-triangle"></i></div>
+                </div>
+                <div class="color-month-card">
+                  <div class="color-month-name">September</div>
+                  <div class="color-month-badge bg-green"><i class="fas fa-check-circle"></i></div>
+                </div>
+                <div class="color-month-card">
+                  <div class="color-month-name">October</div>
+                  <div class="color-month-badge bg-red"><i class="fas fa-fire"></i></div>
+                </div>
+                <div class="color-month-card">
+                  <div class="color-month-name">November</div>
+                  <div class="color-month-badge bg-blue"><i class="fas fa-bolt"></i></div>
+                </div>
+                <div class="color-month-card">
+                  <div class="color-month-name">December</div>
+                  <div class="color-month-badge bg-yellow"><i class="fas fa-exclamation-triangle"></i></div>
+                </div>
+              </div>
+              <div class="color-schedule-legend">
+                <h4>Color Code Legend</h4>
+                <div class="legend-grid">
+                  <div class="legend-item"><span class="legend-dot green"></span> Green - Jan, May, Sep</div>
+                  <div class="legend-item"><span class="legend-dot red"></span> Red - Feb, Jun, Oct</div>
+                  <div class="legend-item"><span class="legend-dot blue"></span> Blue - Mar, Jul, Nov</div>
+                  <div class="legend-item"><span class="legend-dot yellow"></span> Yellow - Apr, Aug, Dec</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <section class="home-card weather-card" id="weatherSection">
+          <header class="home-card-header">
+            <h3><i class="fas fa-sun"></i> Weather & Heat Stress</h3>
+            <button class="link-button" onclick="refreshWeather()"><i class="fas fa-sync-alt"></i> Refresh</button>
+          </header>
+          <div id="weatherContent" class="weather-content">
+            <div class="weather-loading"><i class="fas fa-spinner fa-spin"></i> Getting weather data...</div>
+          </div>
+        </section>
+
+        <section class="home-card" id="homeTbtSection">
+          <header class="home-card-header">
+            <h3><i class="fas fa-book-open"></i> TBT of The Day</h3>
+          </header>
+          <div id="homeTbtContent">Loading...</div>
+        </section>
+
+        <section class="home-card highlight-card">
+          <header class="home-card-header">
+            <h3><i class="fas fa-award"></i> Employee of the Month</h3>
+          </header>
+          <div id="employeeOfMonth">Loading...</div>
+        </section>
+
+        <section class="home-card">
+          <header class="home-card-header">
+            <h3><i class="fas fa-trophy"></i> Top Safety Performers</h3>
+            <button class="link-button" onclick="openModal('leaderboardModal')">Full leaderboard</button>
+          </header>
+          <div id="homeLeaderboardMini">Loading...</div>
+        </section>
+
+        <section class="home-card">
+          <header class="home-card-header">
+            <h3><i class="fas fa-chart-pie"></i> Top 5 Areas by Observations</h3>
+          </header>
+          <div class="areas-chart-container">
+            <canvas id="areasChart"></canvas>
+          </div>
+          <div id="areasChartNoData" class="chart-no-data" style="display:none;">No observation data available</div>
+        </section>
+
+        <section class="home-card emergency-reporting-card">
+          <header class="home-card-header">
+            <h3><i class="fas fa-exclamation-triangle"></i> Emergency Reporting Steps</h3>
+          </header>
+          <div class="emergency-steps-grid">
+            <div class="emergency-step">
+              <div class="step-number">1</div>
+              <div class="step-content">
+                <div class="step-title">Dial Emergency</div>
+                <div class="step-desc">Call the emergency hotline immediately</div>
+              </div>
+            </div>
+            <div class="emergency-step">
+              <div class="step-number">2</div>
+              <div class="step-content">
+                <div class="step-title">State Location</div>
+                <div class="step-desc">Describe the exact location clearly</div>
+              </div>
+            </div>
+            <div class="emergency-step">
+              <div class="step-number">3</div>
+              <div class="step-content">
+                <div class="step-title">Describe Emergency</div>
+                <div class="step-desc">Explain the nature of the incident</div>
+              </div>
+            </div>
+            <div class="emergency-step">
+              <div class="step-number">4</div>
+              <div class="step-content">
+                <div class="step-title">Request Services</div>
+                <div class="step-desc">Identify required emergency services</div>
+              </div>
+            </div>
+            <div class="emergency-step">
+              <div class="step-number">5</div>
+              <div class="step-content">
+                <div class="step-title">Answer Questions</div>
+                <div class="step-desc">Respond to all operator questions</div>
+              </div>
+            </div>
+            <div class="emergency-step">
+              <div class="step-number">6</div>
+              <div class="step-content">
+                <div class="step-title">Stay on Line</div>
+                <div class="step-desc">Do not hang up until instructed</div>
+              </div>
+            </div>
+          </div>
+          <div class="location-share-section" id="locationShareSection">
+            <div class="location-share-header" onclick="toggleLocationShare()">
+              <div class="location-share-icon"><i class="fas fa-crosshairs"></i></div>
+              <div class="location-share-text">
+                <span class="loc-title">Share My Location</span>
+                <span class="loc-subtitle">Get GPS coordinates for emergency</span>
+              </div>
+              <i class="fas fa-chevron-down location-toggle-icon" id="locToggleIcon"></i>
+            </div>
+            <div class="location-share-content" id="locationShareContent" style="display:none;">
+              <button class="get-coords-btn" onclick="getGPSLocationEnhanced()">
+                <i class="fas fa-satellite"></i> Get My Coordinates
+              </button>
+              <div class="coords-display" id="coordsDisplay" style="display:none;">
+                <div class="coords-row">
+                  <span class="coords-label"><i class="fas fa-globe"></i> Latitude:</span>
+                  <span class="coords-value" id="latValue">--</span>
+                </div>
+                <div class="coords-row">
+                  <span class="coords-label"><i class="fas fa-globe"></i> Longitude:</span>
+                  <span class="coords-value" id="lngValue">--</span>
+                </div>
+                <div class="coords-row">
+                  <span class="coords-label"><i class="fas fa-bullseye"></i> Accuracy:</span>
+                  <span class="coords-value" id="accValue">--</span>
+                </div>
+                <a href="#" id="googleMapsLink" class="google-maps-link" target="_blank">
+                  <i class="fab fa-google"></i> Open in Google Maps
+                </a>
+                <button class="copy-coords-btn" onclick="copyCoordinates()">
+                  <i class="fas fa-copy"></i> Copy Coordinates
+                </button>
+              </div>
+              <div class="coords-loading" id="coordsLoading" style="display:none;">
+                <i class="fas fa-spinner fa-spin"></i> Getting location...
+              </div>
+            </div>
+          </div>
+          <div class="emergency-actions">
+            <button class="emergency-call-btn" onclick="openModal('emergencyContactsModal')"><i class="fas fa-phone-alt"></i> Emergency Contacts</button>
+          </div>
+        </section>
+
+        <section class="home-card safety-responsibilities-card">
+          <header class="home-card-header">
+            <h3><i class="fas fa-user-shield"></i> Safety Responsibilities</h3>
+            <button class="link-button" onclick="toggleSafetyResponsibilities()"><i class="fas fa-chevron-down" id="respToggleIcon"></i></button>
+          </header>
+          <div class="responsibilities-summary">
+            <div class="resp-category clickable" onclick="showResponsibilitySection('reporting')">
+              <div class="resp-category-icon reporting"><i class="fas fa-bullhorn"></i></div>
+              <div class="resp-category-title">Reporting</div>
+              <div class="resp-category-count">11 duties</div>
+            </div>
+            <div class="resp-category clickable" onclick="showResponsibilitySection('monitoring')">
+              <div class="resp-category-icon monitoring"><i class="fas fa-eye"></i></div>
+              <div class="resp-category-title">Monitoring</div>
+              <div class="resp-category-count">8 duties</div>
+            </div>
+            <div class="resp-category clickable" onclick="showResponsibilitySection('compliance')">
+              <div class="resp-category-icon compliance"><i class="fas fa-check-circle"></i></div>
+              <div class="resp-category-title">Compliance</div>
+              <div class="resp-category-count">14 duties</div>
+            </div>
+          </div>
+          <div class="responsibilities-full" id="responsibilitiesFull" style="display:none;">
+            <div class="resp-section">
+              <div class="resp-section-header"><i class="fas fa-bullhorn"></i> Reporting Duties</div>
+              <ul class="resp-list">
+                <li>Report all NM, FAI, CA & PA to your immediate HSE supervisor</li>
+                <li>Report all incidents that result in injury or damage to property</li>
+                <li>Report misuse of equipment, tools, facilities or any other entity</li>
+                <li>Report any severe arguments, signs of prejudice, bullying or fighting</li>
+                <li>Report any other Health, Safety or Environmental concerns</li>
+                <li>Report unsafe situations observed & all unsafe occurrences immediately</li>
+                <li>Report HSE concerns immediately to party in-charge regardless of action</li>
+                <li>Submit written reports for any mistreated behavior</li>
+                <li>Fill observation forms clearly for all unsafe occurrences</li>
+                <li>Maintain accurate records of all HSE activities</li>
+                <li>Hand over accurate TBT records to HSE supervisor at end of each shift</li>
+              </ul>
+            </div>
+            <div class="resp-section">
+              <div class="resp-section-header"><i class="fas fa-eye"></i> Monitoring Duties</div>
+              <ul class="resp-list">
+                <li>Conduct frequent HSE inspections of assigned location</li>
+                <li>Perform continuous monitoring of ongoing activities</li>
+                <li>Be vigilant and present at site during all activities</li>
+                <li>Monitor and close all site-related PSI points and HSE findings</li>
+                <li>Follow up with construction supervision on all HSE issues</li>
+                <li>Inspection and monitoring of sub-contractor activities</li>
+                <li>Carry out monthly inspections (fire extinguishers, rigging, lifting equipment)</li>
+                <li>Conduct all TBTs with workers and supervisory staff</li>
+              </ul>
+            </div>
+            <div class="resp-section">
+              <div class="resp-section-header"><i class="fas fa-check-circle"></i> Compliance Duties</div>
+              <ul class="resp-list">
+                <li>Follow reporting chain: HSE Supervisor, Coordinator & Manager</li>
+                <li>Demonstrate the priority of safety and set a good personal example</li>
+                <li>Understand all safety requirements including CSSP, HIP, JSA, CSM</li>
+                <li>Ensure subcontractors and visitors receive safety orientation</li>
+                <li>Ensure all equipment is in safe working condition</li>
+                <li>Ensure no N.D.E. shall endanger any person</li>
+                <li>Ensure 100% work permit system compliance</li>
+                <li>Ensure equipment operators are competent with valid certificates</li>
+                <li>Ensure all tools and electrical equipment are in good order</li>
+                <li>Ensure scaffolding platforms and ladders are safe and tagged</li>
+                <li>Ensure the jobsite is tidy and waste is removed each shift</li>
+                <li>Stop work as per HSI 063 and Stop Work Authority Policy</li>
+                <li>Participate in incident investigations, drills, and training</li>
+                <li>Assist in implementation of waste management plan</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="home-card useful-links-card">
+          <header class="home-card-header">
+            <h3><i class="fas fa-link"></i> Useful Links</h3>
+          </header>
+          <div class="useful-links-grid">
+            <div class="useful-link-item" onclick="openDocViewer('CSM Book','https://drive.google.com/file/d/1JS1VQKXLHdOOFXpYcpRftM-kviBv-TYd/preview')">
+              <div class="link-icon csm"><i class="fas fa-book"></i></div>
+              <div class="link-info">
+                <div class="link-title">CSM Book</div>
+                <div class="link-desc">Contractor Safety Manual</div>
+              </div>
+              <i class="fas fa-eye"></i>
+            </div>
+            <div class="useful-link-item" onclick="openDocViewer('Safety Handbook','https://drive.google.com/file/d/109vG3Hk3PdgvQF87k0EJ1IiKDTDfdQTv/preview')">
+              <div class="link-icon handbook"><i class="fas fa-hard-hat"></i></div>
+              <div class="link-info">
+                <div class="link-title">Safety Handbook</div>
+                <div class="link-desc">Saudi Aramco Safety Guide</div>
+              </div>
+              <i class="fas fa-eye"></i>
+            </div>
+          </div>
+        </section>
+
+        <div class="home-about-link" onclick="openModal('aboutModal')">
+          <i class="fas fa-info-circle"></i> About This App
+        </div>
+      </section>
+
+      <section class="tab-content" id="ObservationsTab">
+        <div class="obs-summary-bar">
+          <div class="obs-summary-item summary-purple">
+            <div class="obs-summary-label" id="obsSummaryLabel">This Month</div>
+            <div class="obs-summary-value" id="obsCountTotal">--</div>
+          </div>
+          <div class="obs-summary-item summary-green">
+            <div class="obs-summary-label">Open</div>
+            <div class="obs-summary-value" id="obsCountOpen">--</div>
+          </div>
+          <div class="obs-summary-item summary-red">
+            <div class="obs-summary-label">Closed</div>
+            <div class="obs-summary-value" id="obsCountClosed">--</div>
+          </div>
+        </div>
+        <div class="obs-filters">
+          <div class="obs-filter-row">
+            <button class="obs-filter-chip" data-range="today">Today</button>
+            <button class="obs-filter-chip" data-range="week">This Week</button>
+            <button class="obs-filter-chip active" data-range="month">This Month</button>
+            <button class="obs-filter-chip" data-range="all">All</button>
+          </div>
+          <div class="obs-filter-row">
+            <select id="obsFilterArea"><option value="">All Areas</option></select>
+            <select id="obsFilterStatus">
+              <option value="">All Statuses</option>
+              <option value="Open">Open</option>
+              <option value="Closed">Closed</option>
+            </select>
+          </div>
+          <div class="obs-filter-row">
+            <input type="text" id="obsSearch" placeholder="Search observations..."/>
+          </div>
+          <div class="obs-filter-row" style="justify-content:center;">
+            <button class="obs-open-sheet-btn" onclick="openModal('addObservationModal')">
+              <i class="fas fa-plus-circle"></i> Add Observation
+            </button>
+          </div>
+        </div>
+        <div class="areas-grid-wrapper" id="obsAreasWrapper">
+          <div class="areas-grid-toggle" id="obsAreasToggle" onclick="toggleAreasGrid('obs')">
+            <div class="areas-grid-toggle-left">
+              <span class="areas-grid-toggle-title"><i class="fas fa-map-marker-alt"></i> Areas</span>
+            </div>
+            <button class="areas-grid-clear" id="clearObsAreaFilter" style="display:none;" onclick="event.stopPropagation();clearObsAreaFilter()">Clear Filter</button>
+            <div class="areas-grid-toggle-arrow"><i class="fas fa-chevron-down"></i></div>
+          </div>
+          <div class="areas-grid-content" id="obsAreasGrid"></div>
+        </div>
+        <div id="observationsList"></div>
+      </section>
+
+      <section class="tab-content" id="PermitsTab">
+        <div class="obs-summary-bar">
+          <div class="obs-summary-item summary-purple">
+            <div class="obs-summary-label">Total Permits</div>
+            <div class="obs-summary-value" id="permitsCountTotal">--</div>
+          </div>
+          <div class="obs-summary-item summary-blue">
+            <div class="obs-summary-label">Areas Covered</div>
+            <div class="obs-summary-value" id="permitsCountAreas">--</div>
+          </div>
+          <div class="obs-summary-item summary-green">
+            <div class="obs-summary-label" id="permitsSummaryLabel">Today</div>
+            <div class="obs-summary-value" id="permitsCountToday">--</div>
+          </div>
+        </div>
+        <div class="obs-filters">
+          <div class="obs-filter-row">
+            <button class="obs-filter-chip permits-chip active" data-range="today">Today</button>
+            <button class="obs-filter-chip permits-chip" data-range="week">This Week</button>
+            <button class="obs-filter-chip permits-chip" data-range="month">This Month</button>
+            <button class="obs-filter-chip permits-chip" data-range="all">All</button>
+          </div>
+          <div class="obs-filter-row">
+            <select id="permitsFilterArea"><option value="">All Areas</option></select>
+            <select id="permitsFilterType"><option value="">All Types</option></select>
+          </div>
+          <div class="obs-filter-row">
+            <input type="text" id="permitsSearch" placeholder="Search permits..."/>
+          </div>
+          <div class="obs-filter-row" style="justify-content:center;">
+            <button class="obs-open-sheet-btn" onclick="openModal('addPermitModal')">
+              <i class="fas fa-plus-circle"></i> Add Permit
+            </button>
+          </div>
+        </div>
+        <div class="areas-grid-wrapper" id="permitAreasWrapper">
+          <div class="areas-grid-toggle" id="permitAreasToggle" onclick="toggleAreasGrid('permit')">
+            <div class="areas-grid-toggle-left">
+              <span class="areas-grid-toggle-title"><i class="fas fa-map-marker-alt"></i> Areas</span>
+            </div>
+            <button class="areas-grid-clear" id="clearAreaFilter" style="display:none;" onclick="event.stopPropagation();clearPermitAreaFilter()">Clear Filter</button>
+            <div class="areas-grid-toggle-arrow"><i class="fas fa-chevron-down"></i></div>
+          </div>
+          <div class="areas-grid-content" id="permitAreasGrid"></div>
+        </div>
+        <div id="permitsList"></div>
+      </section>
+
+      <section class="tab-content" id="EquipmentTab">
+        <div class="obs-summary-bar">
+          <div class="obs-summary-item summary-purple">
+            <div class="obs-summary-label">Total Equipment</div>
+            <div class="obs-summary-value" id="eqCountTotal">--</div>
+          </div>
+          <div class="obs-summary-item summary-orange">
+            <div class="obs-summary-label">TPS Expiring</div>
+            <div class="obs-summary-value" id="eqCountTps">--</div>
+          </div>
+          <div class="obs-summary-item summary-red">
+            <div class="obs-summary-label">INS Expiring</div>
+            <div class="obs-summary-value" id="eqCountIns">--</div>
+          </div>
+        </div>
+        <div class="obs-filters">
+          <div class="obs-filter-row">
+            <select id="eqFilterArea"><option value="">All Areas</option></select>
+            <select id="eqFilterStatus">
+              <option value="">All Statuses</option>
+              <option value="In Service">In Service</option>
+              <option value="Out of Service">Out of Service</option>
+            </select>
+          </div>
+          <div class="obs-filter-row">
+            <input type="text" id="eqSearch" placeholder="Search equipment..."/>
+          </div>
+          <div class="obs-filter-row" style="justify-content:center;">
+            <button class="obs-open-sheet-btn" onclick="openModal('addEquipmentModal')">
+              <i class="fas fa-plus-circle"></i> Add Equipment
+            </button>
+          </div>
+        </div>
+        <div class="areas-grid-wrapper" id="eqAreasWrapper">
+          <div class="areas-grid-toggle" id="eqAreasToggle" onclick="toggleAreasGrid('eq')">
+            <div class="areas-grid-toggle-left">
+              <span class="areas-grid-toggle-title"><i class="fas fa-map-marker-alt"></i> Areas</span>
+            </div>
+            <button class="areas-grid-clear" id="clearEqAreaFilter" style="display:none;" onclick="event.stopPropagation();clearEqAreaFilter()">Clear Filter</button>
+            <div class="areas-grid-toggle-arrow"><i class="fas fa-chevron-down"></i></div>
+          </div>
+          <div class="areas-grid-content" id="eqAreasGrid"></div>
+        </div>
+        <div id="equipmentList"></div>
+      </section>
+
+      <section class="tab-content" id="TbtTab">
+        <div class="obs-summary-bar">
+          <div class="obs-summary-item summary-purple">
+            <div class="obs-summary-label">Total TBT</div>
+            <div class="obs-summary-value" id="tbtCountTotal">--</div>
+          </div>
+          <div class="obs-summary-item summary-green">
+            <div class="obs-summary-label" id="tbtSummaryLabel">Today</div>
+            <div class="obs-summary-value" id="tbtCountFiltered">--</div>
+          </div>
+          <div class="obs-summary-item summary-blue">
+            <div class="obs-summary-label">Avg Attendance</div>
+            <div class="obs-summary-value" id="tbtAvgAttendance">--</div>
+          </div>
+        </div>
+        <div class="obs-filters">
+          <div class="obs-filter-row">
+            <button class="obs-filter-chip tbt-chip active" data-range="today">Today</button>
+            <button class="obs-filter-chip tbt-chip" data-range="week">This Week</button>
+            <button class="obs-filter-chip tbt-chip" data-range="month">This Month</button>
+            <button class="obs-filter-chip tbt-chip" data-range="all">All</button>
+          </div>
+          <div class="obs-filter-row">
+            <select id="tbtFilterArea"><option value="">All Areas</option></select>
+            <input type="text" id="tbtSearch" placeholder="Search TBT..."/>
+          </div>
+          <div class="obs-filter-row" style="justify-content:center;">
+            <button class="obs-open-sheet-btn" onclick="openModal('addTbtModal')">
+              <i class="fas fa-plus-circle"></i> Add Toolbox Talk
+            </button>
+          </div>
+        </div>
+        <div class="areas-grid-wrapper" id="tbtAreasWrapper">
+          <div class="areas-grid-toggle" id="tbtAreasToggle" onclick="toggleAreasGrid('tbt')">
+            <div class="areas-grid-toggle-left">
+              <span class="areas-grid-toggle-title"><i class="fas fa-map-marker-alt"></i> Areas</span>
+            </div>
+            <button class="areas-grid-clear" id="clearTbtAreaFilter" style="display:none;" onclick="event.stopPropagation();clearTbtAreaFilter()">Clear Filter</button>
+            <div class="areas-grid-toggle-arrow"><i class="fas fa-chevron-down"></i></div>
+          </div>
+          <div class="areas-grid-content" id="tbtAreasGrid"></div>
+        </div>
+        <div id="tbtList"></div>
+      </section>
+
+      <section class="tab-content" id="LibraryTab">
+        <div class="section-header">
+          <div class="section-badge section-badge-blue">
+            <i class="fas fa-book"></i>
+            <span>Safety Library</span>
+          </div>
+        </div>
+        <div class="library-grid">
+          <div class="library-card" onclick="openLibrarySection('tbt')">
+            <i class="fas fa-chalkboard-teacher"></i>
+            <h3>TBT Library</h3>
+            <p>Toolbox Talk documents</p>
+          </div>
+          <div class="library-card" onclick="openLibrarySection('jsa')">
+            <i class="fas fa-clipboard-list"></i>
+            <h3>JSA Library</h3>
+            <p>Job Safety Analysis</p>
+          </div>
+          <div class="library-card" onclick="openLibrarySection('csm')">
+            <i class="fas fa-hard-hat"></i>
+            <h3>CSM Library</h3>
+            <p>Construction Safety Manual</p>
+          </div>
+          <div class="library-card" onclick="openDocViewer('Safety Handbook','https://drive.google.com/file/d/109vG3Hk3PdgvQF87k0EJ1IiKDTDfdQTv/preview')">
+            <i class="fas fa-book-open"></i>
+            <h3>Safety Handbook</h3>
+            <p>Saudi Aramco Safety Handbook</p>
+          </div>
+          <div class="library-card" onclick="openLibrarySection('walkthrough')">
+            <i class="fas fa-walking"></i>
+            <h3>Safety Walkthrough</h3>
+            <p>Site safety inspection guides</p>
+          </div>
+        </div>
+        <div id="libraryContent" style="display:none;">
+          <button class="back-btn" onclick="closeLibrarySection()"><i class="fas fa-arrow-left"></i> Back</button>
+          <input type="text" id="librarySearch" placeholder="Search documents..."/>
+          <div id="libraryList"></div>
+        </div>
+      </section>
+
+      <section class="tab-content" id="ToolsTab">
+        <div class="section-header">
+          <div class="section-badge section-badge-orange">
+            <i class="fas fa-tools"></i>
+            <span>Safety Tools</span>
+          </div>
+        </div>
+        <div class="tools-grid" id="toolsGrid">
+          <!-- Row 1: Medical & Emergency -->
+          <div class="tool-card" onclick="openToolFullView('firstAidKit')">
+            <i class="fas fa-first-aid" style="color: #10b981"></i>
+            <span>First Aid Kit Checker</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('firstAidGuide')">
+            <i class="fas fa-heartbeat" style="color: #ef4444"></i>
+            <span>First Aid Guide</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('emergencyResponse')">
+            <i class="fas fa-ambulance" style="color: #3b82f6"></i>
+            <span>Emergency Response</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('safetySigns')">
+            <i class="fas fa-sign" style="color: #f59e0b"></i>
+            <span>Safety Signs Reference</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('handSignals')">
+            <i class="fas fa-hands" style="color: #ec4899"></i>
+            <span>Hand Signals Guide</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('barricadeSignage')">
+            <i class="fas fa-exclamation-triangle" style="color: #f97316"></i>
+            <span>Barricade/Signage Guide</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('fireExtinguisher')">
+            <i class="fas fa-fire-extinguisher" style="color: #dc2626"></i>
+            <span>Fire Extinguisher Guide</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('hazardClassification')">
+            <i class="fas fa-skull-crossbones" style="color: #7c3aed"></i>
+            <span>Hazard Classification</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('gasDetection')">
+            <i class="fas fa-broadcast-tower" style="color: #06b6d4"></i>
+            <span>Gas Detection Reference</span>
+          </div>
+          <!-- Row 2: PPE & Environment -->
+          <div class="tool-card" onclick="openToolFullView('ppeGuide')">
+            <i class="fas fa-hard-hat" style="color: #f43f5e"></i>
+            <span>PPE Guide</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('safetyLimits')">
+            <i class="fas fa-ruler-combined" style="color: #14b8a6"></i>
+            <span>Safety Limits Reference</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('lifeSaving')">
+            <i class="fas fa-heart" style="color: #e11d48"></i>
+            <span>Life Saving Rules</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('heatStress')">
+            <i class="fas fa-thermometer-half" style="color: #ea580c"></i>
+            <span>Heat Stress</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('windSpeed')">
+            <i class="fas fa-wind" style="color: #0ea5e9"></i>
+            <span>Wind Speed</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('noiseLevel')">
+            <i class="fas fa-volume-up" style="color: #a855f7"></i>
+            <span>Noise Level</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('excavation')">
+            <i class="fas fa-hard-hat" style="color: #ca8a04"></i>
+            <span>Excavation Safety</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('riskMatrix')">
+            <i class="fas fa-th" style="color: #64748b"></i>
+            <span>Risk Matrix</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('incidentInvestigation')">
+            <i class="fas fa-search" style="color: #2563eb"></i>
+            <span>Incident Investigation</span>
+          </div>
+          <!-- Row 3: Learning & Planning -->
+          <div class="tool-card" onclick="openToolFullView('quiz')">
+            <i class="fas fa-question-circle" style="color: #6366f1"></i>
+            <span>Safety Quiz</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('adaptiveLearning')">
+            <i class="fas fa-brain" style="color: #8b5cf6"></i>
+            <span>Adaptive Learning</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('trainingMatrix')">
+            <i class="fas fa-graduation-cap" style="color: #1e3a5f"></i>
+            <span>Training Matrix</span>
+          </div>
+          <div class="tool-card" onclick="openLearningVideos()">
+            <i class="fas fa-play-circle" style="color: #be185d"></i>
+            <span>Learning Videos</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('safetyCalendar')">
+            <i class="fas fa-calendar-alt" style="color: #16a34a"></i>
+            <span>Safety Calendar</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('safetyMeetingTimer')">
+            <i class="fas fa-clock" style="color: #0891b2"></i>
+            <span>Safety Meeting Timer</span>
+          </div>
+          <div class="tool-card" onclick="openToolFullView('challenges')">
+            <i class="fas fa-tasks" style="color: #84cc16"></i>
+            <span>Daily Challenges</span>
+          </div>
+        </div>
+        <div id="toolsFullView" class="tools-full-view" style="display:none;">
+          <button class="back-btn" onclick="closeToolFullView()"><i class="fas fa-arrow-left"></i> Back to Tools</button>
+          <div id="toolsFullViewContent"></div>
+        </div>
+
+        <div id="trainingMatrixSection" class="tool-section" style="display:none;">
+          <h3><i class="fas fa-graduation-cap"></i> Training Matrix</h3>
+          <p class="section-desc">Select a job role to view required training certifications and their validity periods.</p>
+          <div class="training-matrix-container">
+            <div class="training-role-selector">
+              <label for="trainingRoleSelect"><i class="fas fa-user-tie"></i> Select Role:</label>
+              <select id="trainingRoleSelect" onchange="loadTrainingsForRole()">
+                <option value="">-- Choose a Role --</option>
+              </select>
+            </div>
+            <div id="trainingListContainer" class="training-list-container">
+              <div class="training-empty-state">
+                <i class="fas fa-clipboard-list"></i>
+                <p>Select a role above to view training requirements</p>
+              </div>
+            </div>
+            <div id="trainingStats" class="training-stats" style="display:none;">
+              <div class="training-stat">
+                <span class="stat-number" id="trainingCount">0</span>
+                <span class="stat-label">Required Trainings</span>
+              </div>
+              <div class="training-stat">
+                <span class="stat-number" id="training2YrCount">0</span>
+                <span class="stat-label">2-Year Validity</span>
+              </div>
+              <div class="training-stat">
+                <span class="stat-number" id="training1YrCount">0</span>
+                <span class="stat-label">1-Year Validity</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="heatStressSection" class="tool-section" style="display:none;">
+          <h3><i class="fas fa-thermometer-half"></i> Heat Stress Calculator</h3>
+          <p class="tool-description">Based on Aramco CSM I-13 Heat Stress Prevention Guidelines</p>
+          
+          <div class="heat-stress-calculator">
+            <div class="heat-input-section">
+              <div class="heat-input-group">
+                <label><i class="fas fa-temperature-high"></i> Temperature (°C)</label>
+                <input type="number" id="inputTemp" placeholder="e.g., 35" oninput="calculateHeatIndex()"/>
+              </div>
+              <div class="heat-input-group">
+                <label><i class="fas fa-tint"></i> Humidity (%)</label>
+                <input type="number" id="inputHumidity" placeholder="e.g., 40" oninput="calculateHeatIndex()"/>
+              </div>
+            </div>
+
+            <div class="heat-result-card" id="heatResultCard">
+              <div class="heat-result-header">
+                <div class="heat-index-display">
+                  <span class="heat-index-label">Heat Index</span>
+                  <span class="heat-index-value" id="heatIndexResult">--</span>
+                </div>
+                <div class="heat-category-badge" id="heatCategoryBadge">
+                  <i class="fas fa-thermometer-quarter"></i>
+                  <span id="heatCategoryText">Enter values</span>
+                </div>
+              </div>
+              
+              <div class="heat-details" id="heatDetails" style="display:none;">
+                <div class="heat-detail-row">
+                  <div class="heat-detail-item work-rest">
+                    <i class="fas fa-clock"></i>
+                    <div class="detail-content">
+                      <span class="detail-label">Work:Rest Ratio</span>
+                      <span class="detail-value" id="heatWorkRest">--</span>
+                    </div>
+                  </div>
+                  <div class="heat-detail-item water">
+                    <i class="fas fa-glass-water"></i>
+                    <div class="detail-content">
+                      <span class="detail-label">Water Intake</span>
+                      <span class="detail-value" id="heatWaterIntake">--</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="heat-symptoms-section">
+                  <h4><i class="fas fa-exclamation-triangle"></i> Watch for Symptoms:</h4>
+                  <div class="symptoms-list" id="heatSymptomsList"></div>
+                </div>
+                
+                <div class="heat-actions-section" id="heatActionsSection"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="heat-reference-table">
+            <h4><i class="fas fa-table"></i> Aramco Heat Stress Categories (CSM I-13)</h4>
+            <div class="heat-table-wrapper">
+              <table class="heat-category-table">
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th>Heat Index</th>
+                    <th>Work:Rest</th>
+                    <th>Water</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="category-caution">
+                    <td><span class="cat-badge cat-1">I - Caution</span></td>
+                    <td>25-29°C</td>
+                    <td>Normal</td>
+                    <td>1 cup/20 min</td>
+                  </tr>
+                  <tr class="category-extreme-caution">
+                    <td><span class="cat-badge cat-2">II - Extreme Caution</span></td>
+                    <td>30-37°C</td>
+                    <td>50:10 min</td>
+                    <td>1 cup/20 min</td>
+                  </tr>
+                  <tr class="category-danger">
+                    <td><span class="cat-badge cat-3">III - Danger</span></td>
+                    <td>38-40°C</td>
+                    <td>30:10 min</td>
+                    <td>1 cup/15 min</td>
+                  </tr>
+                  <tr class="category-extreme-danger">
+                    <td><span class="cat-badge cat-4">IV - Extreme Danger</span></td>
+                    <td>41°C+</td>
+                    <td>20:10 min</td>
+                    <td>1 cup/10 min</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="heat-illness-guide">
+            <h4><i class="fas fa-first-aid"></i> Heat Illness Recognition</h4>
+            <div class="illness-cards">
+              <div class="illness-card cramps">
+                <div class="illness-header">
+                  <i class="fas fa-bolt"></i>
+                  <span>Heat Cramps</span>
+                </div>
+                <div class="illness-symptoms">Early warning sign, muscle cramps in legs, arms, or stomach</div>
+                <div class="illness-action">Move to cool area, stretch muscles, drink water</div>
+              </div>
+              <div class="illness-card exhaustion">
+                <div class="illness-header">
+                  <i class="fas fa-tired"></i>
+                  <span>Heat Exhaustion</span>
+                </div>
+                <div class="illness-symptoms">Weakness, dizziness, heavy sweating, rapid pulse, pale/flushed skin, headache</div>
+                <div class="illness-action">Move to cool area, remove excess clothing, apply cool water, seek medical help</div>
+              </div>
+              <div class="illness-card stroke">
+                <div class="illness-header">
+                  <i class="fas fa-ambulance"></i>
+                  <span>Heat Stroke</span>
+                </div>
+                <div class="illness-symptoms">No sweating, high body temp, chills, rapid pulse, confusion, nausea, unconsciousness</div>
+                <div class="illness-action emergency">EMERGENCY: Call 911, cool body immediately with ice/cold water, do NOT give fluids if unconscious</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="windSpeedSection" class="tool-section" style="display:none;">
+          <h3><i class="fas fa-wind"></i> Wind Speed Safety</h3>
+          <p class="tool-description">Aramco crane and lifting operations wind limits per CSM III-7</p>
+          
+          <div class="wind-calculator">
+            <div class="wind-input-section">
+              <div class="wind-input-group">
+                <label><i class="fas fa-wind"></i> Current Wind Speed</label>
+                <div class="wind-input-row">
+                  <input type="number" id="inputWind" placeholder="e.g., 25" oninput="calculateWindSafety()"/>
+                  <span class="wind-unit">km/h</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="wind-result-card" id="windResultCard">
+              <div class="wind-result-header">
+                <div class="wind-status-display">
+                  <span class="wind-status-label">Status</span>
+                  <span class="wind-status-value" id="windResult">--</span>
+                </div>
+                <div class="wind-speed-display" id="windSpeedDisplay">
+                  <i class="fas fa-wind"></i>
+                  <span id="windSpeedMph">-- mph</span>
+                </div>
+              </div>
+              
+              <div class="wind-restrictions-section" id="windRestrictionsSection" style="display:none;">
+                <div class="wind-restriction-item" id="windRestrictions"></div>
+                
+                <div class="crane-operations-status" id="craneOpsStatus">
+                  <div class="crane-op-item" id="standardCraneStatus">
+                    <i class="fas fa-truck-loading"></i>
+                    <div class="crane-op-info">
+                      <span class="crane-op-label">Standard Crane Lifts</span>
+                      <span class="crane-op-status">--</span>
+                    </div>
+                  </div>
+                  <div class="crane-op-item" id="manbasketStatus">
+                    <i class="fas fa-user-shield"></i>
+                    <div class="crane-op-info">
+                      <span class="crane-op-label">Manbasket Operations</span>
+                      <span class="crane-op-status">--</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="wind-limits-reference">
+            <h4><i class="fas fa-exclamation-circle"></i> Aramco Wind Speed Limits</h4>
+            
+            <div class="wind-limits-grid">
+              <div class="wind-limit-card crane-limit">
+                <div class="limit-icon"><i class="fas fa-truck-loading"></i></div>
+                <div class="limit-info">
+                  <span class="limit-title">Standard Crane Lifts</span>
+                  <span class="limit-value">Max 32 km/h <span class="limit-mph">(20 mph)</span></span>
+                  <span class="limit-note">All crane lifting operations must cease</span>
+                </div>
+              </div>
+              
+              <div class="wind-limit-card manbasket-limit">
+                <div class="limit-icon"><i class="fas fa-user-shield"></i></div>
+                <div class="limit-info">
+                  <span class="limit-title">Manbasket Operations</span>
+                  <span class="limit-value">Max 25 km/h <span class="limit-mph">(15 mph)</span></span>
+                  <span class="limit-note">Personnel lifting requires lower threshold</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="wind-restrictions-table">
+              <h5>Work Restrictions by Wind Speed</h5>
+              <table class="wind-table">
+                <thead>
+                  <tr>
+                    <th>Wind Speed</th>
+                    <th>Status</th>
+                    <th>Required Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="wind-safe">
+                    <td>&lt; 25 km/h</td>
+                    <td><span class="wind-badge safe">SAFE</span></td>
+                    <td>Normal operations - all activities permitted</td>
+                  </tr>
+                  <tr class="wind-caution">
+                    <td>25-32 km/h</td>
+                    <td><span class="wind-badge caution">CAUTION</span></td>
+                    <td>Stop manbasket ops, monitor conditions, secure loose materials</td>
+                  </tr>
+                  <tr class="wind-restricted">
+                    <td>32-40 km/h</td>
+                    <td><span class="wind-badge restricted">RESTRICTED</span></td>
+                    <td>Stop ALL crane operations, review work at height activities</td>
+                  </tr>
+                  <tr class="wind-danger">
+                    <td>&gt; 40 km/h</td>
+                    <td><span class="wind-badge danger">STOP WORK</span></td>
+                    <td>Suspend outdoor work, secure all equipment, seek shelter</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="riskMatrixSection" class="tool-section" style="display:none;">
+          <h3><i class="fas fa-calculator"></i> Interactive Risk Calculator</h3>
+          <p class="section-desc">Select the likelihood and consequence to calculate the risk level per Aramco risk assessment standards.</p>
+          
+          <div class="risk-calculator">
+            <div class="risk-calc-inputs">
+              <div class="risk-input-group">
+                <label><i class="fas fa-percentage"></i> Likelihood</label>
+                <div class="risk-options likelihood-options">
+                  <button class="risk-option" data-value="1" onclick="selectRiskOption('likelihood', 1, this)">
+                    <span class="option-value">1</span>
+                    <span class="option-label">Rare</span>
+                    <span class="option-desc">May occur only in exceptional circumstances</span>
+                  </button>
+                  <button class="risk-option" data-value="2" onclick="selectRiskOption('likelihood', 2, this)">
+                    <span class="option-value">2</span>
+                    <span class="option-label">Unlikely</span>
+                    <span class="option-desc">Could occur at some time</span>
+                  </button>
+                  <button class="risk-option" data-value="3" onclick="selectRiskOption('likelihood', 3, this)">
+                    <span class="option-value">3</span>
+                    <span class="option-label">Possible</span>
+                    <span class="option-desc">Might occur at some time</span>
+                  </button>
+                  <button class="risk-option" data-value="4" onclick="selectRiskOption('likelihood', 4, this)">
+                    <span class="option-value">4</span>
+                    <span class="option-label">Likely</span>
+                    <span class="option-desc">Will probably occur in most circumstances</span>
+                  </button>
+                  <button class="risk-option" data-value="5" onclick="selectRiskOption('likelihood', 5, this)">
+                    <span class="option-value">5</span>
+                    <span class="option-label">Almost Certain</span>
+                    <span class="option-desc">Expected to occur in most circumstances</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="risk-input-group">
+                <label><i class="fas fa-exclamation-circle"></i> Consequence</label>
+                <div class="risk-options consequence-options">
+                  <button class="risk-option" data-value="1" onclick="selectRiskOption('consequence', 1, this)">
+                    <span class="option-value">1</span>
+                    <span class="option-label">Insignificant</span>
+                    <span class="option-desc">First aid only, minor impact</span>
+                  </button>
+                  <button class="risk-option" data-value="2" onclick="selectRiskOption('consequence', 2, this)">
+                    <span class="option-value">2</span>
+                    <span class="option-label">Minor</span>
+                    <span class="option-desc">Medical treatment, limited impact</span>
+                  </button>
+                  <button class="risk-option" data-value="3" onclick="selectRiskOption('consequence', 3, this)">
+                    <span class="option-value">3</span>
+                    <span class="option-label">Moderate</span>
+                    <span class="option-desc">Lost time injury, moderate damage</span>
+                  </button>
+                  <button class="risk-option" data-value="4" onclick="selectRiskOption('consequence', 4, this)">
+                    <span class="option-value">4</span>
+                    <span class="option-label">Major</span>
+                    <span class="option-desc">Permanent disability, major damage</span>
+                  </button>
+                  <button class="risk-option" data-value="5" onclick="selectRiskOption('consequence', 5, this)">
+                    <span class="option-value">5</span>
+                    <span class="option-label">Catastrophic</span>
+                    <span class="option-desc">Fatality, severe environmental damage</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="risk-result-display" id="riskResultDisplay">
+              <div class="risk-result-placeholder">
+                <i class="fas fa-hand-pointer"></i>
+                <span>Select both Likelihood and Consequence to calculate risk</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="risk-matrix-reference">
+            <h4><i class="fas fa-th"></i> Risk Matrix Reference</h4>
+            <div class="risk-matrix-grid">
+              <div class="matrix-header-row">
+                <div class="matrix-corner"></div>
+                <div class="matrix-header">1<br><small>Insignif.</small></div>
+                <div class="matrix-header">2<br><small>Minor</small></div>
+                <div class="matrix-header">3<br><small>Moderate</small></div>
+                <div class="matrix-header">4<br><small>Major</small></div>
+                <div class="matrix-header">5<br><small>Catast.</small></div>
+              </div>
+              <div class="matrix-row">
+                <div class="matrix-label">5 - Almost Certain</div>
+                <div class="matrix-cell risk-medium" data-l="5" data-c="1">M</div>
+                <div class="matrix-cell risk-high" data-l="5" data-c="2">H</div>
+                <div class="matrix-cell risk-high" data-l="5" data-c="3">H</div>
+                <div class="matrix-cell risk-extreme" data-l="5" data-c="4">E</div>
+                <div class="matrix-cell risk-extreme" data-l="5" data-c="5">E</div>
+              </div>
+              <div class="matrix-row">
+                <div class="matrix-label">4 - Likely</div>
+                <div class="matrix-cell risk-medium" data-l="4" data-c="1">M</div>
+                <div class="matrix-cell risk-medium" data-l="4" data-c="2">M</div>
+                <div class="matrix-cell risk-high" data-l="4" data-c="3">H</div>
+                <div class="matrix-cell risk-high" data-l="4" data-c="4">H</div>
+                <div class="matrix-cell risk-extreme" data-l="4" data-c="5">E</div>
+              </div>
+              <div class="matrix-row">
+                <div class="matrix-label">3 - Possible</div>
+                <div class="matrix-cell risk-low" data-l="3" data-c="1">L</div>
+                <div class="matrix-cell risk-medium" data-l="3" data-c="2">M</div>
+                <div class="matrix-cell risk-medium" data-l="3" data-c="3">M</div>
+                <div class="matrix-cell risk-high" data-l="3" data-c="4">H</div>
+                <div class="matrix-cell risk-high" data-l="3" data-c="5">H</div>
+              </div>
+              <div class="matrix-row">
+                <div class="matrix-label">2 - Unlikely</div>
+                <div class="matrix-cell risk-low" data-l="2" data-c="1">L</div>
+                <div class="matrix-cell risk-low" data-l="2" data-c="2">L</div>
+                <div class="matrix-cell risk-medium" data-l="2" data-c="3">M</div>
+                <div class="matrix-cell risk-medium" data-l="2" data-c="4">M</div>
+                <div class="matrix-cell risk-high" data-l="2" data-c="5">H</div>
+              </div>
+              <div class="matrix-row">
+                <div class="matrix-label">1 - Rare</div>
+                <div class="matrix-cell risk-low" data-l="1" data-c="1">L</div>
+                <div class="matrix-cell risk-low" data-l="1" data-c="2">L</div>
+                <div class="matrix-cell risk-low" data-l="1" data-c="3">L</div>
+                <div class="matrix-cell risk-medium" data-l="1" data-c="4">M</div>
+                <div class="matrix-cell risk-medium" data-l="1" data-c="5">M</div>
+              </div>
+            </div>
+            <div class="risk-legend">
+              <div class="legend-item"><span class="legend-box risk-low"></span> Low - Acceptable with monitoring</div>
+              <div class="legend-item"><span class="legend-box risk-medium"></span> Medium - Requires controls</div>
+              <div class="legend-item"><span class="legend-box risk-high"></span> High - Significant controls needed</div>
+              <div class="legend-item"><span class="legend-box risk-extreme"></span> Extreme - Immediate action required</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="lifeSavingSection" class="tool-section" style="display:none;">
+          <h3><i class="fas fa-heart"></i> Life Saving Rules</h3>
+          <div class="life-saving-rules">
+            <div class="rule-item"><i class="fas fa-check-circle"></i> Work with valid permit when required</div>
+            <div class="rule-item"><i class="fas fa-check-circle"></i> Conduct gas tests when required</div>
+            <div class="rule-item"><i class="fas fa-check-circle"></i> Verify isolation before work</div>
+            <div class="rule-item"><i class="fas fa-check-circle"></i> Obtain authorization before entering confined space</div>
+            <div class="rule-item"><i class="fas fa-check-circle"></i> Protect yourself against falls when working at height</div>
+            <div class="rule-item"><i class="fas fa-check-circle"></i> Do not walk under suspended load</div>
+            <div class="rule-item"><i class="fas fa-check-circle"></i> Do not smoke outside designated areas</div>
+            <div class="rule-item"><i class="fas fa-check-circle"></i> No alcohol or drugs while working</div>
+            <div class="rule-item"><i class="fas fa-check-circle"></i> While driving, do not use phone and wear seatbelt</div>
+            <div class="rule-item"><i class="fas fa-check-circle"></i> Follow prescribed journey management plan</div>
+          </div>
+        </div>
+
+        <div id="challengesSection" class="tool-section" style="display:none;">
+          <h3><i class="fas fa-tasks"></i> Safety Challenges</h3>
+          <p class="challenges-intro">Complete challenges to earn points! Upload photo evidence.</p>
+          <div class="challenge-type-tabs">
+            <button class="challenge-tab active" onclick="loadChallengesByType('daily')"><i class="fas fa-calendar-day"></i> Daily</button>
+            <button class="challenge-tab" onclick="loadChallengesByType('weekly')"><i class="fas fa-calendar-week"></i> Weekly</button>
+            <button class="challenge-tab" onclick="loadChallengesByType('monthly')"><i class="fas fa-calendar-alt"></i> Monthly</button>
+          </div>
+          <div id="challengesList">Loading challenges...</div>
+        </div>
+
+        <div id="quizSection" class="tool-section" style="display:none;">
+          <h3><i class="fas fa-question-circle"></i> Safety Quiz</h3>
+          <p class="quiz-intro">Test your Aramco safety knowledge! 10 questions daily, 1 point per correct answer.</p>
+          <div id="quizContainer">
+            <div id="quizStart" class="quiz-start-panel">
+              <div class="quiz-info">
+                <i class="fas fa-brain quiz-icon"></i>
+                <h4>Daily Safety Quiz</h4>
+                <p>Answer 10 questions based on Aramco safety standards</p>
+                <p><strong>1 point</strong> for each correct answer</p>
+              </div>
+              <button class="quiz-start-btn" onclick="startQuiz()"><i class="fas fa-play"></i> Start Quiz</button>
+              <div id="quizHistory" class="quiz-history"></div>
+            </div>
+            <div id="quizQuestions" style="display:none;"></div>
+            <div id="quizResults" style="display:none;"></div>
+          </div>
+        </div>
+
+        <div id="ppeGuideSection" class="tool-section" style="display:none;">
+          <h3><i class="fas fa-hard-hat"></i> PPE Selection Guide</h3>
+          <p class="section-desc">Select your work activity to see required PPE per Saudi Aramco standards.</p>
+          
+          <div class="ppe-body-zone-section">
+            <div class="ppe-body-zone-title"><i class="fas fa-user-shield"></i> Body Protection Zones</div>
+            <div class="ppe-body-diagram">
+              <div class="ppe-zone-row">
+                <div class="ppe-zone-item zone-head">
+                  <div class="ppe-zone-icon"><i class="fas fa-hard-hat"></i></div>
+                  <div class="ppe-zone-info">
+                    <span class="ppe-zone-name">Head</span>
+                    <span class="ppe-zone-items">Hard Hat, Welding Helmet</span>
+                  </div>
+                </div>
+                <div class="ppe-zone-item zone-eyes">
+                  <div class="ppe-zone-icon"><i class="fas fa-glasses"></i></div>
+                  <div class="ppe-zone-info">
+                    <span class="ppe-zone-name">Eyes & Face</span>
+                    <span class="ppe-zone-items">Safety Glasses, Face Shield, Goggles</span>
+                  </div>
+                </div>
+                <div class="ppe-zone-item zone-ears">
+                  <div class="ppe-zone-icon"><i class="fas fa-headphones"></i></div>
+                  <div class="ppe-zone-info">
+                    <span class="ppe-zone-name">Hearing</span>
+                    <span class="ppe-zone-items">Earplugs, Earmuffs</span>
+                  </div>
+                </div>
+              </div>
+              <div class="ppe-zone-row">
+                <div class="ppe-zone-item zone-respiratory">
+                  <div class="ppe-zone-icon"><i class="fas fa-lungs"></i></div>
+                  <div class="ppe-zone-info">
+                    <span class="ppe-zone-name">Respiratory</span>
+                    <span class="ppe-zone-items">Respirator, SCBA, Dust Mask</span>
+                  </div>
+                </div>
+                <div class="ppe-zone-item zone-body">
+                  <div class="ppe-zone-icon"><i class="fas fa-tshirt"></i></div>
+                  <div class="ppe-zone-info">
+                    <span class="ppe-zone-name">Body</span>
+                    <span class="ppe-zone-items">Coveralls, FR Clothing, Hi-Vis Vest</span>
+                  </div>
+                </div>
+                <div class="ppe-zone-item zone-fall">
+                  <div class="ppe-zone-icon"><i class="fas fa-user-shield"></i></div>
+                  <div class="ppe-zone-info">
+                    <span class="ppe-zone-name">Fall Protection</span>
+                    <span class="ppe-zone-items">Harness, Lanyard, Lifeline</span>
+                  </div>
+                </div>
+              </div>
+              <div class="ppe-zone-row">
+                <div class="ppe-zone-item zone-hands">
+                  <div class="ppe-zone-icon"><i class="fas fa-hand-paper"></i></div>
+                  <div class="ppe-zone-info">
+                    <span class="ppe-zone-name">Hands</span>
+                    <span class="ppe-zone-items">Work Gloves, Chemical Gloves, Welding Gloves</span>
+                  </div>
+                </div>
+                <div class="ppe-zone-item zone-feet">
+                  <div class="ppe-zone-icon"><i class="fas fa-shoe-prints"></i></div>
+                  <div class="ppe-zone-info">
+                    <span class="ppe-zone-name">Feet</span>
+                    <span class="ppe-zone-items">Steel Toe Boots, Metatarsal Guards</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="ppe-task-selector-title"><i class="fas fa-tasks"></i> Select Work Activity</div>
+          <div class="ppe-tasks-grid">
+            <div class="ppe-task-card" data-task="general" onclick="selectPPETask('general')">
+              <div class="ppe-task-icon general"><i class="fas fa-door-open"></i></div>
+              <span>General Site Entry</span>
+            </div>
+            <div class="ppe-task-card" data-task="chemical" onclick="selectPPETask('chemical')">
+              <div class="ppe-task-icon chemical"><i class="fas fa-flask"></i></div>
+              <span>Chemical Handling</span>
+            </div>
+            <div class="ppe-task-card" data-task="noise" onclick="selectPPETask('noise')">
+              <div class="ppe-task-icon noise"><i class="fas fa-volume-up"></i></div>
+              <span>High Noise Area</span>
+            </div>
+            <div class="ppe-task-card" data-task="heights" onclick="selectPPETask('heights')">
+              <div class="ppe-task-icon heights"><i class="fas fa-arrow-up"></i></div>
+              <span>Work at Heights</span>
+            </div>
+            <div class="ppe-task-card" data-task="confined" onclick="selectPPETask('confined')">
+              <div class="ppe-task-icon confined"><i class="fas fa-compress-arrows-alt"></i></div>
+              <span>Confined Space</span>
+            </div>
+            <div class="ppe-task-card" data-task="welding" onclick="selectPPETask('welding')">
+              <div class="ppe-task-icon welding"><i class="fas fa-fire"></i></div>
+              <span>Hot Work / Welding</span>
+            </div>
+            <div class="ppe-task-card" data-task="blasting" onclick="selectPPETask('blasting')">
+              <div class="ppe-task-icon blasting"><i class="fas fa-spray-can"></i></div>
+              <span>Abrasive Blasting</span>
+            </div>
+            <div class="ppe-task-card" data-task="excavation" onclick="selectPPETask('excavation')">
+              <div class="ppe-task-icon excavation"><i class="fas fa-hard-hat"></i></div>
+              <span>Excavation Work</span>
+            </div>
+          </div>
+          
+          <div id="ppeResultsContainer" class="ppe-results-container" style="display:none;"></div>
+        </div>
+
+        <div id="noiseLevelSection" class="tool-section" style="display:none;">
+          <h3><i class="fas fa-volume-up"></i> Noise Level Calculator</h3>
+          <p class="section-desc">Measure real-time noise levels using your device microphone. Saudi Aramco requires hearing protection at 85 dBA and above.</p>
+          
+          <div id="noiseMeterContainer" class="noise-meter-container">
+            <div class="noise-meter-display">
+              <div class="noise-db-display">
+                <span id="noiseDbValue" class="noise-db-value">--</span>
+                <span class="noise-db-unit">dBA</span>
+              </div>
+              <div class="noise-meter-bar-container">
+                <div class="noise-meter-bar-bg">
+                  <div id="noiseDbBar" class="noise-db-bar"></div>
+                </div>
+                <div class="noise-meter-scale">
+                  <span>30</span>
+                  <span>50</span>
+                  <span>70</span>
+                  <span class="scale-warning">85</span>
+                  <span>100</span>
+                  <span>130</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="noise-status-container">
+              <div id="noiseStatusText" class="noise-status-text">Waiting...</div>
+              <p id="noiseStatusDesc" class="noise-status-desc">Press Start to begin noise measurement</p>
+            </div>
+            
+            <div class="noise-controls">
+              <button id="startNoiseBtn" class="noise-control-btn start" onclick="startNoiseMeasurement()">
+                <i class="fas fa-microphone"></i> Start Measurement
+              </button>
+              <button id="stopNoiseBtn" class="noise-control-btn stop" onclick="stopNoiseMeasurement()" style="display:none;">
+                <i class="fas fa-stop"></i> Stop Measurement
+              </button>
+            </div>
+          </div>
+          
+          <div class="noise-reference-card">
+            <h4><i class="fas fa-info-circle"></i> Aramco Noise Exposure Standards</h4>
+            <div class="noise-reference-grid">
+              <div class="noise-ref-item safe">
+                <span class="noise-ref-level">&lt;85 dBA</span>
+                <span class="noise-ref-desc">No hearing protection required</span>
+              </div>
+              <div class="noise-ref-item danger">
+                <span class="noise-ref-level">≥85 dBA</span>
+                <span class="noise-ref-desc">Hearing protection REQUIRED</span>
+              </div>
+              <div class="noise-ref-item extreme">
+                <span class="noise-ref-level">≥100 dBA</span>
+                <span class="noise-ref-desc">Double protection recommended</span>
+              </div>
+            </div>
+            <p class="noise-note">Max 8-hour exposure at 85 dBA. For impulse/tonal noise, subtract 5 dBA from readings.</p>
+          </div>
+        </div>
+
+        <div id="safetyCalendarSection" class="tool-section" style="display:none;">
+          <h3><i class="fas fa-calendar-alt"></i> Safety Calendar</h3>
+          <p class="section-desc">Track safety meetings, walkthroughs, drills, campaigns, and holidays.</p>
+          
+          <div class="calendar-container">
+            <div class="calendar-view-switcher">
+              <button class="calendar-view-btn active" data-view="month" onclick="changeCalendarView('month')">Month</button>
+              <button class="calendar-view-btn" data-view="week" onclick="changeCalendarView('week')">Week</button>
+              <button class="calendar-view-btn" data-view="day" onclick="changeCalendarView('day')">Day</button>
+              <button class="calendar-view-btn" data-view="list" onclick="changeCalendarView('list')">List</button>
+            </div>
+            
+            <div class="calendar-filters">
+              <select id="calendarTypeFilter" onchange="filterCalendarEvents()">
+                <option value="">All Types</option>
+                <option value="Meeting">Meeting</option>
+                <option value="Walkthrough">Walkthrough</option>
+                <option value="Drill">Drill</option>
+                <option value="Campaign">Campaign</option>
+                <option value="Holiday">Holiday</option>
+              </select>
+              <select id="calendarStatusFilter" onchange="filterCalendarEvents()">
+                <option value="">All Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Completed">Completed</option>
+              </select>
+              <input type="text" id="calendarSearchInput" placeholder="Search events..." oninput="filterCalendarEvents()"/>
+            </div>
+            
+            <div class="calendar-header">
+              <button class="calendar-nav-btn" onclick="navigateCalendar(-1)"><i class="fas fa-chevron-left"></i></button>
+              <h4 id="calendarTitle">December 2025</h4>
+              <button class="calendar-nav-btn" onclick="navigateCalendar(1)"><i class="fas fa-chevron-right"></i></button>
+              <button class="calendar-today-btn" onclick="navigateCalendarToToday()">Today</button>
+              <button class="calendar-settings-btn" id="calendarSettingsBtn" onclick="openCalendarSettings()" title="Calendar Settings" style="display:none;">
+                <i class="fas fa-cog"></i>
+              </button>
+            </div>
+            
+            <div id="calendarMonthView" class="calendar-month-view">
+              <div class="calendar-weekdays">
+                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+              </div>
+              <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+            
+            <div id="calendarWeekView" class="calendar-week-view" style="display:none;">
+              <div class="week-view-container" id="weekViewContainer"></div>
+            </div>
+            
+            <div id="calendarDayView" class="calendar-day-view" style="display:none;">
+              <div class="day-view-container" id="dayViewContainer"></div>
+            </div>
+            
+            <div id="calendarListView" class="calendar-list-view" style="display:none;">
+              <table class="calendar-list-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="calendarListBody"></tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div class="calendar-export-section">
+            <button class="btn btn-secondary" onclick="exportCalendarCSV()">
+              <i class="fas fa-file-csv"></i> Export CSV
+            </button>
+            <button class="btn btn-secondary" onclick="printCalendarPDF()">
+              <i class="fas fa-file-pdf"></i> Print/PDF
+            </button>
+          </div>
+          
+          <button class="calendar-fab" onclick="openAddEventModal()" title="Add Event">
+            <i class="fas fa-plus"></i>
+          </button>
+          
+          <div id="calendarSettingsPanel" class="calendar-settings-panel" style="display:none;">
+            <div class="settings-panel-header">
+              <h3><i class="fas fa-cog"></i> Calendar Settings</h3>
+              <button class="close-settings-btn" onclick="closeCalendarSettings()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="settings-panel-tabs">
+              <button class="settings-tab-btn active" data-tab="categories" onclick="switchSettingsTab('categories')">Categories</button>
+              <button class="settings-tab-btn" data-tab="settings" onclick="switchSettingsTab('settings')">Settings</button>
+            </div>
+            <div id="categoriesTab" class="settings-tab-content active">
+              <div class="categories-list" id="categoriesList"></div>
+              <button class="add-category-btn" onclick="showAddCategoryForm()">
+                <i class="fas fa-plus"></i> Add Category
+              </button>
+              <div id="addCategoryForm" class="add-category-form" style="display:none;">
+                <input type="text" id="newCategoryName" placeholder="Category Name" required/>
+                <input type="color" id="newCategoryColor" value="#3b82f6"/>
+                <select id="newCategoryIcon">
+                  <option value="fa-calendar">Calendar</option>
+                  <option value="fa-users">Meeting</option>
+                  <option value="fa-chalkboard-teacher">Training</option>
+                  <option value="fa-search">Inspection</option>
+                  <option value="fa-clipboard-check">Audit</option>
+                  <option value="fa-fire-extinguisher">Drill</option>
+                  <option value="fa-comments">Toolbox Talk</option>
+                  <option value="fa-walking">Walkthrough</option>
+                  <option value="fa-bullhorn">Campaign</option>
+                  <option value="fa-umbrella-beach">Holiday</option>
+                  <option value="fa-star">Other</option>
+                </select>
+                <div class="category-form-actions">
+                  <button type="button" onclick="hideAddCategoryForm()">Cancel</button>
+                  <button type="button" class="btn-save" onclick="saveNewCategory()">Save</button>
+                </div>
+              </div>
+            </div>
+            <div id="settingsTab" class="settings-tab-content" style="display:none;">
+              <div class="settings-group">
+                <label class="settings-toggle">
+                  <span>Require Approval for Events</span>
+                  <input type="checkbox" id="settingRequireApproval"/>
+                  <span class="toggle-slider"></span>
+                </label>
+                <label class="settings-toggle">
+                  <span>Auto-approve Admin Events</span>
+                  <input type="checkbox" id="settingAutoApproveAdmin"/>
+                  <span class="toggle-slider"></span>
+                </label>
+                <label class="settings-toggle">
+                  <span>Notify on Event Creation</span>
+                  <input type="checkbox" id="settingNotifyOnCreate"/>
+                  <span class="toggle-slider"></span>
+                </label>
+                <label class="settings-toggle">
+                  <span>Notify on Event Approval</span>
+                  <input type="checkbox" id="settingNotifyOnApprove"/>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="settings-group">
+                <label class="settings-field">
+                  <span>Default Calendar View</span>
+                  <select id="settingDefaultView">
+                    <option value="month">Month</option>
+                    <option value="week">Week</option>
+                    <option value="day">Day</option>
+                    <option value="list">List</option>
+                  </select>
+                </label>
+                <label class="settings-field">
+                  <span>Reminder Days Before Event</span>
+                  <input type="number" id="settingReminderDays" min="0" max="30" value="1"/>
+                </label>
+              </div>
+              <button class="save-settings-btn" onclick="saveCalendarSettings()">
+                <i class="fas fa-save"></i> Save Settings
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-content" id="ExcavationTab">
+        <div class="section-header">
+          <button class="back-btn" onclick="showTab('MoreTab')"><i class="fas fa-arrow-left"></i></button>
+          <div class="section-badge section-badge-brown">
+            <i class="fas fa-hard-hat"></i>
+            <span>Excavation Safety</span>
+          </div>
+        </div>
+
+        <div class="excavation-sub-nav">
+          <button class="excavation-nav-btn active" onclick="showExcavationSection('dashboard')">
+            <i class="fas fa-chart-line"></i> Dashboard
+          </button>
+          <button class="excavation-nav-btn" onclick="showExcavationSection('planning')">
+            <i class="fas fa-clipboard-list"></i> Pre-Planning
+          </button>
+          <button class="excavation-nav-btn" onclick="showExcavationSection('inspections')">
+            <i class="fas fa-search"></i> Inspections
+          </button>
+          <button class="excavation-nav-btn" onclick="showExcavationSection('permits')">
+            <i class="fas fa-file-alt"></i> Permits
+          </button>
+          <button class="excavation-nav-btn" onclick="showExcavationSection('tools')">
+            <i class="fas fa-tools"></i> CSM Tools
+          </button>
+        </div>
+
+        <div id="excavationDashboard" class="excavation-section">
+          <div class="excavation-stats-grid">
+            <div class="excavation-stat-card stat-total">
+              <i class="fas fa-hard-hat"></i>
+              <div class="stat-content">
+                <span class="stat-number" id="excTotalCount">0</span>
+                <span class="stat-label">Active Excavations</span>
+              </div>
+            </div>
+            <div class="excavation-stat-card stat-compliant">
+              <i class="fas fa-check-circle"></i>
+              <div class="stat-content">
+                <span class="stat-number" id="excCompliantCount">0</span>
+                <span class="stat-label">Compliant</span>
+              </div>
+            </div>
+            <div class="excavation-stat-card stat-action">
+              <i class="fas fa-exclamation-triangle"></i>
+              <div class="stat-content">
+                <span class="stat-number" id="excActionCount">0</span>
+                <span class="stat-label">Needs Action</span>
+              </div>
+            </div>
+            <div class="excavation-stat-card stat-stop">
+              <i class="fas fa-stop-circle"></i>
+              <div class="stat-content">
+                <span class="stat-number" id="excStopWorkCount">0</span>
+                <span class="stat-label">Stop Work</span>
+              </div>
+            </div>
+          </div>
+          <div class="excavation-list-header">
+            <h3><i class="fas fa-list"></i> Excavation Registry</h3>
+            <button class="add-excavation-btn" onclick="showExcavationSection('planning')">
+              <i class="fas fa-plus"></i> New Excavation
+            </button>
+          </div>
+          <div class="excavation-filters">
+            <select id="excFilterStatus" onchange="loadExcavations()">
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="completed">Completed</option>
+              <option value="suspended">Suspended</option>
+            </select>
+            <select id="excFilterCompliance" onchange="loadExcavations()">
+              <option value="">All Compliance</option>
+              <option value="Compliant">Compliant</option>
+              <option value="Needs Action">Needs Action</option>
+              <option value="Stop Work">Stop Work</option>
+            </select>
+            <input type="text" id="excSearchInput" placeholder="Search..." oninput="loadExcavations()"/>
+          </div>
+          <div id="excavationsList" class="excavations-list">
+            <p class="loading-text">Loading excavations...</p>
+          </div>
+        </div>
+
+        <div id="excavationPlanning" class="excavation-section" style="display:none;">
+          <div class="excavation-form-container">
+            <h3><i class="fas fa-clipboard-list"></i> Pre-Excavation Planning</h3>
+            <p class="form-description">Complete this form before starting any excavation work. CSM II-1 requirements will be automatically checked.</p>
+            
+            <form id="excavationPlanningForm" onsubmit="submitExcavation(event)">
+              <input type="hidden" id="excId" value=""/>
+              
+              <div class="form-section">
+                <h4><i class="fas fa-map-marker-alt"></i> Location Details</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Excavation Name/ID *</label>
+                    <input type="text" id="excName" placeholder="e.g., EX-2025-001" required/>
+                  </div>
+                  <div class="form-group">
+                    <label>Area *</label>
+                    <select id="excArea" required>
+                      <option value="">-- Select Area --</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Specific Location *</label>
+                  <input type="text" id="excLocation" placeholder="Detailed location description" required/>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>GPS Coordinates</label>
+                    <input type="text" id="excGpsCoords" placeholder="e.g., 24.1537, 49.3553"/>
+                    <button type="button" class="gps-btn" onclick="getExcavationGPS()"><i class="fas fa-crosshairs"></i></button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h4><i class="fas fa-ruler-vertical"></i> Excavation Specifications</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Planned Depth (meters) *</label>
+                    <input type="number" id="excDepth" step="0.1" min="0" placeholder="e.g., 2.0" required onchange="updateExcavationRecommendations()"/>
+                  </div>
+                  <div class="form-group">
+                    <label>Planned Width (meters) *</label>
+                    <input type="number" id="excWidth" step="0.1" min="0" placeholder="e.g., 1.5" required/>
+                  </div>
+                  <div class="form-group">
+                    <label>Planned Length (meters) *</label>
+                    <input type="number" id="excLength" step="0.1" min="0" placeholder="e.g., 10.0" required/>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Soil Type *</label>
+                    <select id="excSoilType" required onchange="updateExcavationRecommendations()">
+                      <option value="">-- Select Soil Type --</option>
+                      <option value="A">Type A - Cohesive (clay, silty clay)</option>
+                      <option value="B">Type B - Medium (angular gravel, silt)</option>
+                      <option value="C">Type C - Granular (sand, gravel, dry soil)</option>
+                      <option value="Unknown">Unknown - Requires Testing</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Will Workers Enter? *</label>
+                    <select id="excWorkerEntry" required onchange="updateExcavationRecommendations()">
+                      <option value="yes">Yes - Workers will enter excavation</option>
+                      <option value="no">No - Remote work only</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h4><i class="fas fa-bolt"></i> Utilities Check (CRITICAL)</h4>
+                <div class="csm-alert csm-alert-warning">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  <span>CSM II-1: All underground utilities must be identified and marked before excavation starts!</span>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Utilities Marked? *</label>
+                    <select id="excUtilitiesMarked" required onchange="updateExcavationRecommendations()">
+                      <option value="">-- Select --</option>
+                      <option value="yes">Yes - All utilities identified and marked</option>
+                      <option value="no">No - Not yet marked</option>
+                      <option value="na">N/A - No utilities in area (verified)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>GPR Survey Performed?</label>
+                    <select id="excGprPerformed">
+                      <option value="no">No</option>
+                      <option value="yes">Yes - GPR completed</option>
+                      <option value="pending">Pending</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Dial Before Dig Reference #</label>
+                  <input type="text" id="excDialRef" placeholder="Enter reference number if applicable"/>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h4><i class="fas fa-building"></i> Adjacent Structures</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Structures Within 45° Plane?</label>
+                    <select id="excAdjacentStructures">
+                      <option value="no">No - Clear of structures</option>
+                      <option value="yes">Yes - Structures present</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Distance to Nearest Structure (m)</label>
+                    <input type="number" id="excStructureDistance" step="0.1" min="0" placeholder="Distance in meters"/>
+                  </div>
+                </div>
+              </div>
+
+              <div id="excRecommendations" class="csm-recommendations" style="display:none;">
+                <h4><i class="fas fa-lightbulb"></i> CSM Recommendations</h4>
+                <div id="excRecommendationsList"></div>
+              </div>
+
+              <div class="form-section">
+                <h4><i class="fas fa-shield-alt"></i> Protective System</h4>
+                <div class="form-group">
+                  <label>Protective System *</label>
+                  <select id="excProtectiveSystem" required>
+                    <option value="">-- Select Based on Recommendations --</option>
+                    <option value="none">None Required (depth &lt; 1.2m, no worker entry)</option>
+                    <option value="sloping">Sloping - Cut back walls to safe angle</option>
+                    <option value="benching">Benching - Step formation</option>
+                    <option value="shoring">Shoring - Hydraulic/Timber support</option>
+                    <option value="trench_box">Trench Box - Pre-fabricated system</option>
+                    <option value="sheet_piling">Sheet Piling - Steel sheets</option>
+                    <option value="engineered">Engineered System - Custom design</option>
+                  </select>
+                </div>
+                <div class="form-group" id="engineeringDocGroup" style="display:none;">
+                  <label>Engineering Design Document</label>
+                  <input type="file" id="excEngineeringDoc" accept=".pdf,.doc,.docx"/>
+                  <p class="form-hint">Required for depths ≥2.4m in Soil B/C or ≥6m in any soil</p>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h4><i class="fas fa-calendar-alt"></i> Schedule</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Start Date *</label>
+                    <input type="date" id="excStartDate" required/>
+                  </div>
+                  <div class="form-group">
+                    <label>Expected End Date</label>
+                    <input type="date" id="excEndDate"/>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Supervisor Name *</label>
+                  <input type="text" id="excSupervisor" placeholder="Competent person responsible" required/>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Additional Notes</label>
+                <textarea id="excNotes" rows="3" placeholder="Any additional information or special considerations..."></textarea>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn-cancel" onclick="resetExcavationForm()">Cancel</button>
+                <button type="submit" class="btn-submit">
+                  <i class="fas fa-save"></i> Save Excavation Plan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div id="excavationInspections" class="excavation-section" style="display:none;">
+          <div class="inspection-header">
+            <h3><i class="fas fa-search"></i> Daily Inspections</h3>
+            <button class="add-inspection-btn" onclick="openDailyInspectionModal()">
+              <i class="fas fa-plus"></i> New Inspection
+            </button>
+          </div>
+          <div class="csm-alert csm-alert-info">
+            <i class="fas fa-info-circle"></i>
+            <span>CSM II-1: Daily inspections are required for all excavations with worker entry. Inspect before each shift and after any event that could affect stability.</span>
+          </div>
+          <div class="inspection-filters">
+            <select id="inspExcavationSelect" onchange="loadExcavationInspections()">
+              <option value="">-- Select Excavation --</option>
+            </select>
+          </div>
+          <div id="inspectionsList" class="inspections-list">
+            <p class="empty-state"><i class="fas fa-clipboard-check"></i> Select an excavation to view inspections</p>
+          </div>
+        </div>
+
+        <div id="excavationPermits" class="excavation-section" style="display:none;">
+          <h3><i class="fas fa-file-alt"></i> Required Permits</h3>
+          <div class="csm-alert csm-alert-info">
+            <i class="fas fa-info-circle"></i>
+            <span>This section shows permits required for each excavation based on CSM requirements.</span>
+          </div>
+          <div class="permit-filters">
+            <select id="permitExcavationSelect" onchange="loadExcavationPermits()">
+              <option value="">-- Select Excavation --</option>
+            </select>
+          </div>
+          <div id="excavationPermitsList" class="excavation-permits-list">
+            <p class="empty-state"><i class="fas fa-file-alt"></i> Select an excavation to view required permits</p>
+          </div>
+        </div>
+
+        <div id="excavationTools" class="excavation-section" style="display:none;">
+          <h3><i class="fas fa-tools"></i> CSM Excavation Tools</h3>
+          <div class="excavation-tools-grid">
+            <div class="exc-tool-card" onclick="openExcTool('utilitiesChecker')">
+              <i class="fas fa-bolt"></i>
+              <span>Utilities Checker</span>
+              <p>Check utility clearances and requirements</p>
+            </div>
+            <div class="exc-tool-card" onclick="openExcTool('protectiveSystem')">
+              <i class="fas fa-shield-alt"></i>
+              <span>Protective System Selector</span>
+              <p>Get recommendations based on soil and depth</p>
+            </div>
+            <div class="exc-tool-card" onclick="openExcTool('permitRequirements')">
+              <i class="fas fa-clipboard-list"></i>
+              <span>Permit Requirements</span>
+              <p>Determine required permits for excavation</p>
+            </div>
+            <div class="exc-tool-card" onclick="openExcTool('slopeCalculator')">
+              <i class="fas fa-drafting-compass"></i>
+              <span>Slope Calculator</span>
+              <p>Calculate safe slope angles by soil type</p>
+            </div>
+            <div class="exc-tool-card" onclick="openExcTool('gasMonitor')">
+              <i class="fas fa-broadcast-tower"></i>
+              <span>Gas Monitor Reference</span>
+              <p>Atmospheric monitoring requirements</p>
+            </div>
+            <div class="exc-tool-card" onclick="window.open('https://drive.google.com/file/d/1imul0j3y9ONgLMSwWZ6aETE6xwvjK34L/view','_blank')">
+              <i class="fas fa-book"></i>
+              <span>CSM II-1 Reference</span>
+              <p>Open full excavation safety manual</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-content" id="DailyReportTab">
+        <div class="section-header">
+          <div class="section-badge section-badge-orange">
+            <i class="fas fa-clipboard-list"></i>
+            <span>Daily Manpower & Equipment</span>
+          </div>
+        </div>
+        
+        <div class="daily-report-actions">
+          <button class="add-daily-report-btn" onclick="openModal('addDailyReportModal')">
+            <i class="fas fa-plus"></i> Add Daily Report
+          </button>
+          <button class="print-reports-btn" onclick="printFilteredDailyReports()">
+            <i class="fas fa-print"></i> Print Reports
+          </button>
+        </div>
+
+        <div class="daily-report-filters">
+          <div class="obs-filter-row">
+            <button class="obs-filter-chip daily-report-chip active" data-range="today">Today</button>
+            <button class="obs-filter-chip daily-report-chip" data-range="week">Week</button>
+            <button class="obs-filter-chip daily-report-chip" data-range="month">Month</button>
+          </div>
+          <div class="obs-filter-row">
+            <select id="dailyReportFilterArea">
+              <option value="">All Areas</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="dailyReportsList" class="daily-reports-list">
+          <div class="loading-placeholder">Loading reports...</div>
+        </div>
+      </section>
+
+      <section class="tab-content" id="SettingsTab">
+        <div class="section-header">
+          <div class="section-badge section-badge-purple">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+          </div>
+        </div>
+        
+        <div class="settings-profile-section">
+          <div class="settings-profile-card">
+            <div class="profile-picture-container">
+              <img id="settingsProfilePic" src="img/default-avatar.svg" alt="Profile" class="profile-picture"/>
+              <label for="profilePicInput" class="profile-picture-edit">
+                <i class="fas fa-camera"></i>
+              </label>
+              <input type="file" id="profilePicInput" accept="image/*" style="display:none;" onchange="uploadProfilePicture(this)"/>
+            </div>
+            <div class="profile-info">
+              <div class="profile-name" id="settingsUserName">User Name</div>
+              <div class="profile-badges-row">
+                <span class="profile-badge badge-id" id="settingsIdBadge"><i class="fas fa-id-badge"></i> <span id="settingsEmployeeId">--</span></span>
+                <a class="profile-badge badge-phone" id="settingsPhoneBadge" href="tel:"><i class="fas fa-phone"></i> <span id="settingsPhone">Not set</span></a>
+                <a class="profile-badge badge-email" id="settingsEmailBadge" href="mailto:"><i class="fas fa-envelope"></i> <span id="settingsEmail">Not set</span></a>
+              </div>
+              <div class="profile-role" id="settingsUserRole">Role</div>
+              <div class="profile-bio-row" id="settingsBioRow">
+                <i class="fas fa-quote-left"></i>
+                <span id="settingsBio">No bio set</span>
+              </div>
+            </div>
+          </div>
+          <button class="edit-profile-btn" onclick="openProfileModal()"><i class="fas fa-edit"></i> Edit Profile</button>
+        </div>
+
+        <div class="settings-section area-assignment-section">
+          <h3><i class="fas fa-map-marker-alt"></i> My Area</h3>
+          <div class="area-select-container">
+            <select id="settingsAssignedArea" onchange="updateAssignedArea()">
+              <option value="">-- Select Your Area --</option>
+            </select>
+          </div>
+          <div id="areaSummaryDashboard" class="area-summary-dashboard" style="display:none;">
+            <div class="area-summary-title">
+              <i class="fas fa-chart-bar"></i> Area Summary - <span id="areaSummaryName">-</span>
+            </div>
+            <div class="area-summary-grid">
+              <div class="area-summary-card summary-blue clickable" onclick="navigateToAreaPermits()">
+                <div class="summary-icon"><i class="fas fa-clipboard-check"></i></div>
+                <div class="summary-value" id="areaPermitsCount">0</div>
+                <div class="summary-label">Active Permits</div>
+              </div>
+              <div class="area-summary-card summary-red clickable" onclick="navigateToAreaObservations()">
+                <div class="summary-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="summary-value" id="areaObsCount">0</div>
+                <div class="summary-label">Open Observations</div>
+              </div>
+              <div class="area-summary-card summary-green">
+                <div class="summary-icon"><i class="fas fa-users"></i></div>
+                <div class="summary-value" id="areaManpowerCount">0</div>
+                <div class="summary-label">Today's Manpower</div>
+              </div>
+              <div class="area-summary-card summary-orange clickable" onclick="navigateToAreaEquipment()">
+                <div class="summary-icon"><i class="fas fa-truck"></i></div>
+                <div class="summary-value" id="areaEquipmentCount">0</div>
+                <div class="summary-label">Equipment Today</div>
+              </div>
+            </div>
+            <div id="areaEquipmentDetails" class="area-equipment-details" style="display:none;">
+              <div class="equipment-breakdown-title">Equipment Breakdown</div>
+              <div class="equipment-breakdown-row">
+                <span class="eq-label">CAT Equipment:</span>
+                <span class="eq-value" id="areaCatEquipment">0</span>
+              </div>
+              <div class="equipment-breakdown-row">
+                <span class="eq-label">Rental Equipment:</span>
+                <span class="eq-value" id="areaRentalEquipment">0</span>
+              </div>
+            </div>
+            <div id="noReportToday" class="no-report-today" style="display:none;">
+              <i class="fas fa-info-circle"></i> No daily report submitted yet for today.
+              <button onclick="openTab(null,'DailyReportTab');openModal('addDailyReportModal')">Add Report</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3><i class="fas fa-medal"></i> Your Badges</h3>
+          <div id="settingsBadges" class="badges-container">
+            <div class="no-badges">No badges earned yet. Keep up the good work!</div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3><i class="fas fa-star"></i> Points & Level</h3>
+          <div class="points-level-card">
+            <div class="points-info">
+              <div class="points-value" id="settingsPoints">0</div>
+              <div class="points-label">Total Points</div>
+            </div>
+            <div class="level-info">
+              <div class="level-value" id="settingsLevel">1</div>
+              <div class="level-label">Current Level</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3><i class="fas fa-palette"></i> Appearance</h3>
+          <div class="settings-option" onclick="toggleDarkModeSettings()">
+            <div class="settings-option-info">
+              <i class="fas fa-moon settings-option-icon"></i>
+              <span>Dark Mode</span>
+            </div>
+            <div class="settings-toggle" id="darkModeToggle">
+              <div class="toggle-slider"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3><i class="fas fa-sign-out-alt"></i> Account</h3>
+          <button class="settings-logout-btn" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
+          <button class="about-btn" onclick="openModal('aboutModal')">
+            <i class="fas fa-info-circle"></i> About
+          </button>
+        </div>
+      </section>
+
+      <section class="tab-content" id="VerificationTab">
+        <div class="section-header">
+          <div class="section-badge section-badge-coral">
+            <i class="fas fa-clipboard-check"></i>
+            <span>Verification Queue</span>
+          </div>
+        </div>
+        <p class="section-desc">Review and verify completed corrective actions before closing observations.</p>
+        <div class="verification-stats">
+          <div class="verification-stat-card">
+            <span class="stat-number" id="pendingVerificationCount">0</span>
+            <span class="stat-label">Pending Verification</span>
+          </div>
+        </div>
+        <div id="verificationList" class="verification-list">
+          <p style="text-align:center;color:var(--text-soft)">Loading...</p>
+        </div>
+      </section>
+
+      <section class="tab-content" id="AdminTab">
+        <div class="section-header">
+          <div class="section-badge section-badge-red">
+            <i class="fas fa-shield-alt"></i>
+            <span>Admin Panel</span>
+          </div>
+        </div>
+        
+        <div class="admin-section admin-section-blue">
+          <div class="admin-section-header">
+            <div class="admin-section-badge admin-badge-blue">
+              <i class="fas fa-sliders-h"></i>
+              <span>Admin Controls</span>
+            </div>
+          </div>
+          <div class="admin-grid">
+            <div class="admin-card admin-card-blue" onclick="loadPendingUsers()">
+              <i class="fas fa-user-clock"></i>
+              <span>Pending Approvals</span>
+              <span id="pendingCount" class="pending-badge" style="display:none;">0</span>
+            </div>
+            <div class="admin-card admin-card-blue" onclick="openModal('addNewsModal')">
+              <i class="fas fa-bullhorn"></i>
+              <span>Post News</span>
+            </div>
+            <div class="admin-card admin-card-blue" onclick="loadAdminUsers()">
+              <i class="fas fa-users"></i>
+              <span>Manage Users</span>
+            </div>
+            <div class="admin-card admin-card-blue" onclick="loadAdminChallenges()">
+              <i class="fas fa-tasks"></i>
+              <span>Manage Challenges</span>
+            </div>
+            <div class="admin-card admin-card-blue" onclick="loadAdminQuizQuestions()">
+              <i class="fas fa-question-circle"></i>
+              <span>Manage Quiz</span>
+            </div>
+            <div class="admin-card admin-card-blue" onclick="openDailyReportSettings()">
+              <i class="fas fa-clipboard-list"></i>
+              <span>Daily Report Settings</span>
+            </div>
+          </div>
+          
+          <div class="admin-subsection" id="dailyReportSettingsSection" style="display:none;">
+            <div class="admin-subsection-header">
+              <span><i class="fas fa-clipboard-list"></i> Daily Report Settings</span>
+              <button class="admin-close-btn" onclick="closeDailyReportSettings()"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="dr-settings-tabs">
+              <button class="dr-settings-tab active" data-tab="equipment" onclick="switchDRSettingsTab('equipment')">Equipment List</button>
+              <button class="dr-settings-tab" data-tab="areas" onclick="switchDRSettingsTab('areas')">Areas</button>
+            </div>
+
+            <div class="dr-settings-content" id="drEquipmentSettings">
+              <div class="dr-add-form">
+                <input type="text" id="newEquipmentName" placeholder="Equipment name"/>
+                <select id="newEquipmentCategory">
+                  <option value="BOTH">Both CAT & Rental</option>
+                  <option value="CAT">CAT Only</option>
+                  <option value="RENTAL">Rental Only</option>
+                </select>
+                <button onclick="addNewEquipment()"><i class="fas fa-plus"></i> Add</button>
+              </div>
+              <div class="dr-items-list" id="equipmentRegistryList">Loading...</div>
+            </div>
+
+            <div class="dr-settings-content" id="drAreasSettings" style="display:none;">
+              <div class="dr-add-form">
+                <input type="text" id="newDRAreaName" placeholder="Area name"/>
+                <button onclick="addNewDRArea()"><i class="fas fa-plus"></i> Add</button>
+              </div>
+              <div class="dr-items-list" id="drAreasList">Loading...</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="admin-section admin-section-green">
+          <div class="admin-section-header">
+            <div class="admin-section-badge admin-badge-green">
+              <i class="fas fa-database"></i>
+              <span>Data Registries</span>
+            </div>
+          </div>
+          <div class="admin-grid">
+            <div class="admin-card admin-card-green" onclick="openAdminRegistry('observations')">
+              <i class="fas fa-eye"></i>
+              <span>Observations Registry</span>
+            </div>
+            <div class="admin-card admin-card-green" onclick="openAdminRegistry('permits')">
+              <i class="fas fa-clipboard-check"></i>
+              <span>Permits Registry</span>
+            </div>
+            <div class="admin-card admin-card-green" onclick="openAdminRegistry('equipment')">
+              <i class="fas fa-truck"></i>
+              <span>Equipment Registry</span>
+            </div>
+            <div class="admin-card admin-card-green" onclick="openAdminRegistry('toolbox')">
+              <i class="fas fa-chalkboard-teacher"></i>
+              <span>Toolbox Talks Registry</span>
+            </div>
+            <div class="admin-card admin-card-green" onclick="openAdminRegistry('daily-reports')">
+              <i class="fas fa-clipboard-list"></i>
+              <span>Daily Reports Registry</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-section admin-section-orange" id="adminSettingsSection">
+          <div class="admin-section-header">
+            <div class="admin-section-badge admin-badge-orange">
+              <i class="fas fa-cogs"></i>
+              <span>Dropdown Settings</span>
+            </div>
+          </div>
+          <div class="admin-grid">
+            <div class="admin-card admin-card-orange" onclick="openDropdownSettings('observations')">
+              <i class="fas fa-eye"></i>
+              <span>Observation Settings</span>
+            </div>
+            <div class="admin-card admin-card-orange" onclick="openDropdownSettings('permits')">
+              <i class="fas fa-clipboard-check"></i>
+              <span>Permit Settings</span>
+            </div>
+            <div class="admin-card admin-card-orange" onclick="openDropdownSettings('equipment')">
+              <i class="fas fa-truck"></i>
+              <span>Equipment Settings</span>
+            </div>
+            <div class="admin-card admin-card-orange" onclick="openDropdownSettings('tbt')">
+              <i class="fas fa-chalkboard-teacher"></i>
+              <span>Toolbox Talk Settings</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="admin-section admin-section-purple">
+          <div class="admin-section-header">
+            <div class="admin-section-badge admin-badge-purple">
+              <i class="fas fa-graduation-cap"></i>
+              <span>Training Matrix Settings</span>
+            </div>
+          </div>
+          <div class="admin-grid">
+            <div class="admin-card admin-card-purple" onclick="openTrainingMatrixSettings('roles')">
+              <i class="fas fa-user-tie"></i>
+              <span>Manage Roles</span>
+            </div>
+            <div class="admin-card admin-card-purple" onclick="openTrainingMatrixSettings('trainings')">
+              <i class="fas fa-certificate"></i>
+              <span>Manage Trainings</span>
+            </div>
+            <div class="admin-card admin-card-purple" onclick="openTrainingMatrixSettings('assignments')">
+              <i class="fas fa-link"></i>
+              <span>Role-Training Assignments</span>
+            </div>
+          </div>
+        </div>
+        
+        <div id="adminContent"></div>
+      </section>
+    </main>
+
+    <nav class="nav-bar">
+      <button class="nav-button active" data-tab="HomeTab">
+        <i class="fas fa-home nav-icon"></i>
+        <span>Home</span>
+      </button>
+      <button class="nav-button" data-tab="ObservationsTab">
+        <i class="fas fa-eye nav-icon"></i>
+        <span>Observe</span>
+      </button>
+      <button class="nav-button" data-tab="PermitsTab">
+        <i class="fas fa-clipboard-check nav-icon"></i>
+        <span>Permits</span>
+      </button>
+      <button class="nav-button" data-tab="EquipmentTab">
+        <i class="fas fa-truck nav-icon"></i>
+        <span>Equipment</span>
+      </button>
+      <button class="nav-button" data-tab="MoreTab" onclick="toggleMoreMenu(event)">
+        <i class="fas fa-ellipsis-h nav-icon"></i>
+        <span>More</span>
+      </button>
+    </nav>
+
+    <div class="modal image-viewer-modal" id="imageViewerModal" onclick="closeImageViewer()">
+      <button class="image-viewer-close" onclick="closeImageViewer()">&times;</button>
+      <img class="image-viewer-img" id="imageViewerImg" src="" alt="Full size image" onclick="event.stopPropagation()"/>
+    </div>
+
+    <div class="more-menu" id="moreMenu" style="display:none;">
+      <button onclick="openTab(null,'DailyReportTab');loadDailyReports();hideMoreMenu()"><i class="fas fa-clipboard-list"></i> Daily Report</button>
+      <button onclick="openTab(null,'TbtTab');hideMoreMenu()"><i class="fas fa-chalkboard-teacher"></i> Toolbox Talks</button>
+      <button onclick="openTab(null,'LibraryTab');hideMoreMenu()"><i class="fas fa-book"></i> Library</button>
+      <button onclick="openTab(null,'ToolsTab');hideMoreMenu()"><i class="fas fa-tools"></i> Tools</button>
+      <button onclick="openUsersInfoModal();hideMoreMenu()"><i class="fas fa-user-tie"></i> Officers Info</button>
+      <button onclick="openTab(null,'SettingsTab');loadSettingsData();hideMoreMenu()"><i class="fas fa-cog"></i> Settings</button>
+      <button id="verificationMenuBtn" style="display:none;" onclick="openTab(null,'VerificationTab');loadVerificationQueue();hideMoreMenu()"><i class="fas fa-clipboard-check"></i> Verification Queue <span id="verificationBadge" class="menu-badge"></span></button>
+      <button id="adminMenuBtn" class="admin-menu-btn" style="display:none;" onclick="openTab(null,'AdminTab');hideMoreMenu()"><i class="fas fa-shield-alt"></i> Admin</button>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal" id="profileModal">
+      <div class="modal-content form-modal">
+        <button class="close-btn" onclick="closeModal('profileModal')">×</button>
+        <h2><i class="fas fa-user-circle"></i> My Profile</h2>
+        <div class="profile-view-section">
+          <div class="profile-avatar-section">
+            <div class="profile-avatar-large" id="profileAvatarPreview">
+              <i class="fas fa-user"></i>
+            </div>
+            <input type="file" id="profilePicInput" accept="image/*" style="display:none;" onchange="handleProfilePicUpload(event)"/>
+            <button class="change-avatar-btn" onclick="$('#profilePicInput').click()"><i class="fas fa-camera"></i> Change Photo</button>
+          </div>
+          <div class="profile-info-readonly">
+            <div class="profile-field readonly">
+              <label><i class="fas fa-id-badge"></i> Employee ID</label>
+              <span id="profileEmployeeId">--</span>
+            </div>
+            <div class="profile-field readonly">
+              <label><i class="fas fa-user"></i> Name</label>
+              <span id="profileName">--</span>
+            </div>
+            <div class="profile-field readonly">
+              <label><i class="fas fa-star"></i> Level</label>
+              <span id="profileLevel">--</span>
+            </div>
+            <div class="profile-field readonly">
+              <label><i class="fas fa-trophy"></i> Points</label>
+              <span id="profilePoints">--</span>
+            </div>
+          </div>
+        </div>
+        <form id="profileEditForm" onsubmit="saveProfile(event)">
+          <div class="form-group">
+            <label><i class="fas fa-phone"></i> Phone Number</label>
+            <input type="tel" id="profilePhone" placeholder="Enter phone number"/>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-envelope"></i> Email</label>
+            <input type="email" id="profileEmail" placeholder="Enter email address"/>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-info-circle"></i> Bio</label>
+            <textarea id="profileBio" placeholder="Tell us about yourself..." rows="3"></textarea>
+          </div>
+          <button type="submit" class="save-profile-btn"><i class="fas fa-save"></i> Save Profile</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Users Info Modal -->
+    <div class="modal" id="usersInfoModal">
+      <div class="modal-content users-info-modal">
+        <button class="close-btn" onclick="closeModal('usersInfoModal')">×</button>
+        <h2><i class="fas fa-user-tie"></i> Officers Directory</h2>
+        <div class="users-search-section">
+          <div class="users-search-input-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" id="usersSearchInput" placeholder="Search by name or employee ID..." oninput="debounceUsersSearch()"/>
+          </div>
+        </div>
+        <div class="users-list-container" id="usersListContainer">
+          <div class="loading-users"><i class="fas fa-spinner fa-spin"></i> Loading users...</div>
+        </div>
+        <div class="users-pagination" id="usersPagination"></div>
+      </div>
+    </div>
+
+    <!-- View User Profile Modal -->
+    <div class="modal" id="viewUserProfileModal" onclick="closeModal('viewUserProfileModal')">
+      <div class="modal-content view-user-profile-modal" onclick="event.stopPropagation()">
+        <div id="viewUserProfileContent">Loading...</div>
+      </div>
+    </div>
+
+    <!-- Document Viewer Modal -->
+    <div class="modal" id="docViewerModal">
+      <div class="modal-content doc-viewer-modal">
+        <div class="doc-viewer-header">
+          <span class="doc-viewer-title" id="docViewerTitle">Document</span>
+          <div class="doc-viewer-actions">
+            <a href="#" id="docViewerExternal" target="_blank" class="doc-viewer-btn"><i class="fas fa-external-link-alt"></i></a>
+            <button class="doc-viewer-btn" onclick="closeModal('docViewerModal')"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+        <div class="doc-viewer-content">
+          <iframe id="docViewerFrame" src="" frameborder="0" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="learning-videos-container" id="learningVideosContainer">
+      <div class="learning-videos-header">
+        <button class="learning-videos-back" onclick="closeLearningVideos()"><i class="fas fa-arrow-left"></i></button>
+        <span class="learning-videos-title"><i class="fas fa-play-circle"></i> Safety Learning Videos</span>
+        <span style="width:40px;"></span>
+      </div>
+      <div class="learning-videos-scroll" id="learningVideosScroll"></div>
+      <div class="swipe-hint" id="swipeHint">
+        <i class="fas fa-chevron-up"></i>
+        <span>Swipe up for more</span>
+      </div>
+    </div>
+  </div>
+  <script src="js/app.js"></script>
+</body>
+</html>
